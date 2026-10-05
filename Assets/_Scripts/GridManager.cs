@@ -15,7 +15,7 @@ public class GridManager : MonoBehaviour
     // Mảng 2D chứa dữ liệu thuật toán
     public PathNode[,] grid;
 
-    private void Start()
+    private void Awake()
     {
         GenerateGrid();
         CreatePathNodeData();
