@@ -4,36 +4,60 @@ using UnityEngine;
 public class EnemyMovement : MonoBehaviour
 {
     [Header("Chỉ số cơ bản")]
-    public float moveSpeed = 3f; // Tốc độ di chuyển của quái
+    public float maxHP = 100f;
+    public float currentHP;
+    public float moveSpeed = 3f;
+    public int damageToBase = 1;
+    public int rewardMoney = 10;
+    public float yOffset = 0.5f;
 
-    // Danh sách các điểm cần đi qua (lấy từ A*)
     private List<PathNode> pathNodes;
     private int currentNodeIndex;
 
+    // Biến để lưu kết nối tránh phải tìm lại nhiều lần
+    private Pathfinding pathfinding;
+    private GridManager gridManager;
+
+    private void Awake()
+    {
+        // Tìm 2 hệ thống này ngay khi game bắt đầu
+        pathfinding = FindFirstObjectByType<Pathfinding>();
+        gridManager = FindFirstObjectByType<GridManager>();
+    }
+
+    protected virtual void OnEnable()
+    {
+        currentHP = maxHP;
+
+        // CHÚ Ý: KHÔNG gọi GetPathFromAStar() ở đây nữa nếu quái được đặt sẵn trên Scene
+        // Object Pool sẽ tự gọi hàm SpawnSetup() sau khi bật quái lên.
+    }
+
     private void Start()
     {
-        // Khi quái xuất hiện, lấy đường đi từ hệ thống A*
+        // Hàm Start chạy sau Awake và OnEnable. Lúc này Grid chắc chắn đã vẽ xong.
+        // Dành cho việc bạn test thả quái trực tiếp trên Scene bằng tay:
+        GetPathFromAStar();
+    }
+
+    // Object Pool sẽ gọi hàm này sau khi lấy quái từ kho ra
+    public void SpawnSetup()
+    {
+        currentHP = maxHP;
         GetPathFromAStar();
     }
 
     private void GetPathFromAStar()
     {
-        // Tìm Pathfinding trong Scene (giả sử nó nằm trong AStarSystem hoặc GameManager)
-        Pathfinding pathfinding = FindFirstObjectByType<Pathfinding>();
-        GridManager gridManager = FindFirstObjectByType<GridManager>();
-
-        if (pathfinding != null && gridManager != null)
+        if (pathfinding != null && gridManager != null && gridManager.grid != null)
         {
-            // Tạm thời hardcode tọa độ Start (0,0) và End (9,9) để test.
-            // Sau này bạn sẽ lấy Start là điểm Spawn và End là Base theo thiết kế map.
+            // Tọa độ Start (0,3) và End (8,1) theo hình ảnh map của bạn
             PathNode startNode = gridManager.grid[0, 3];
             PathNode endNode = gridManager.grid[8, 1];
 
-            // Yêu cầu A* tính toán đường đi
             pathNodes = pathfinding.FindPath(startNode, endNode);
-            currentNodeIndex = 0; // Bắt đầu di chuyển từ điểm đầu tiên trong danh sách
+            currentNodeIndex = 0;
 
-            // Đặt vị trí xuất phát cho quái ngay trên điểm Start
             if (pathNodes != null && pathNodes.Count > 0)
             {
                 transform.position = pathNodes[0].worldPosition;
@@ -41,31 +65,27 @@ public class EnemyMovement : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Enemy không tìm thấy Pathfinding hoặc GridManager!");
+            Debug.LogError(gameObject.name + ": Không tìm thấy Hệ thống A* hoặc Grid chưa được tạo!");
         }
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         MoveAlongPath();
     }
 
     private void MoveAlongPath()
     {
-        // Nếu không có đường đi hoặc đã đi đến điểm cuối cùng
         if (pathNodes == null || currentNodeIndex >= pathNodes.Count)
         {
             return;
         }
 
-        // Lấy vị trí của điểm đến tiếp theo (Nâng trục Y lên một chút để quái không bị chìm dưới đất)
         Vector3 targetPosition = pathNodes[currentNodeIndex].worldPosition;
-        targetPosition.y += 0.5f; // Chỉnh con số này tùy theo chiều cao của Model quái vật
+        targetPosition.y += yOffset;
 
-        // Di chuyển dần dần từ vị trí hiện tại đến targetPosition
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
 
-        // (Tùy chọn) Xoay mặt quái vật hướng về phía đang đi
         Vector3 direction = targetPosition - transform.position;
         if (direction != Vector3.zero)
         {
@@ -73,12 +93,10 @@ public class EnemyMovement : MonoBehaviour
             transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
         }
 
-        // Nếu quái đã đi tới rất gần Node hiện tại (khoảng cách cực nhỏ), chuyển sang Node tiếp theo
         if (Vector3.Distance(transform.position, targetPosition) <= 0.1f)
         {
             currentNodeIndex++;
 
-            // Xử lý khi đi đến Đích (Base)
             if (currentNodeIndex >= pathNodes.Count)
             {
                 ReachBase();
@@ -86,10 +104,24 @@ public class EnemyMovement : MonoBehaviour
         }
     }
 
-    private void ReachBase()
+    protected virtual void ReachBase()
     {
-        Debug.Log("Kẻ địch đã lọt vào Căn cứ! Trừ máu Base!");
-        // (Logic trừ máu Base và tắt quái sẽ code chi tiết sau)
-        gameObject.SetActive(false); // Hoặc Destroy(gameObject) nếu chưa dùng ObjectPool cho Enemy
+        Debug.Log(gameObject.name + " đã lọt vào Căn cứ! Trừ máu Base!");
+        gameObject.SetActive(false);
+    }
+
+    public virtual void TakeDamage(float amount)
+    {
+        currentHP -= amount;
+        if (currentHP <= 0)
+        {
+            Die();
+        }
+    }
+
+    protected virtual void Die()
+    {
+        Debug.Log(gameObject.name + " đã bị tiêu diệt! Nhận " + rewardMoney + " tiền.");
+        gameObject.SetActive(false);
     }
 }
