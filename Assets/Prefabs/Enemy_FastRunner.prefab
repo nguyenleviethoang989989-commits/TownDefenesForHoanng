@@ -72,6 +72,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_FastRunner
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 27777d07b6af26e498675fe64f228bca, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829518461224114169, guid: 27777d07b6af26e498675fe64f228bca, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -156,3 +164,4 @@ MonoBehaviour:
   moveSpeed: 6
   damageToBase: 1
   rewardMoney: 10
+  yOffset: 0.5

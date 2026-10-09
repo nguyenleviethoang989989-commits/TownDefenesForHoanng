@@ -1,0 +1,121 @@
+﻿using UnityEngine;
+
+public class BaseTower : MonoBehaviour
+{
+    // Định nghĩa State Machine cơ bản theo yêu cầu GDD
+    public enum TowerState { Idle, Tracking, Shooting }
+    public TowerState currentState = TowerState.Idle;
+
+    [Header("Thông số cơ bản")]
+    public float range = 3f;      // Tầm bắn của tháp
+    public float fireRate = 1f;   // Tốc độ bắn (số viên đạn/giây)
+    private float fireCountdown = 0f; // Bộ đếm ngược thời gian bắn
+
+    [Header("Nhận diện mục tiêu")]
+    public LayerMask enemyMask;   // Chọn Layer "Enemy" ở Inspector
+    protected Transform target;     // Mục tiêu hiện tại đang khóa
+
+    [Header("Trực quan (Tùy chọn)")]
+    public Transform partToRotate; // Kéo khối nòng súng vào đây để nó xoay theo quái
+
+    protected virtual void Update()
+    {
+        // State Machine điều khiển hành vi của tháp
+        switch (currentState)
+        {
+            case TowerState.Idle:
+                FindTarget();
+                break;
+
+            case TowerState.Tracking:
+                TrackTarget();
+                // Nếu có mục tiêu và súng đã nạp đạn xong -> Chuyển sang Shooting
+                if (target != null && fireCountdown <= 0f)
+                {
+                    currentState = TowerState.Shooting;
+                }
+                break;
+
+            case TowerState.Shooting:
+                Shoot();
+                currentState = TowerState.Tracking; // Bắn xong lập tức quay lại nhìn theo quái
+                break;
+        }
+
+        // Đếm ngược thời gian nạp đạn
+        if (fireCountdown > 0)
+        {
+            fireCountdown -= Time.deltaTime;
+        }
+    }
+
+    // Hàm quét mục tiêu bằng Physics.OverlapSphere
+    private void FindTarget()
+    {
+        // Tạo 1 hình cầu tàng hình quanh tháp, thu thập mọi vật chạm vào thuộc Layer Enemy
+        Collider[] colliders = Physics.OverlapSphere(transform.position, range, enemyMask);
+
+        float shortestDistance = Mathf.Infinity;
+        GameObject nearestEnemy = null;
+
+        // Lọc trong danh sách các quái lọt vào tầm, tìm con nào gần nhất
+        foreach (Collider col in colliders)
+        {
+            float distanceToEnemy = Vector3.Distance(transform.position, col.transform.position);
+            if (distanceToEnemy < shortestDistance)
+            {
+                shortestDistance = distanceToEnemy;
+                nearestEnemy = col.gameObject;
+            }
+        }
+
+        // Nếu tìm thấy và quái đó thực sự trong tầm bắn
+        if (nearestEnemy != null && shortestDistance <= range)
+        {
+            target = nearestEnemy.transform;
+            currentState = TowerState.Tracking; // Đổi trạng thái sang Bám sát
+        }
+        else
+        {
+            target = null;
+        }
+    }
+
+    // Hàm bám theo mục tiêu (Xoay nòng súng)
+    private void TrackTarget()
+    {
+        // Kiểm tra xem quái đã chết (bị cất vào pool), hoặc chạy ra khỏi tầm bắn chưa
+        if (target == null || !target.gameObject.activeInHierarchy || Vector3.Distance(transform.position, target.position) > range)
+        {
+            target = null;
+            currentState = TowerState.Idle; // Mất dấu -> Trở về trạng thái nghỉ tìm mồi mới
+            return;
+        }
+
+        // Nếu có khai báo partToRotate, xoay từ từ nòng súng về phía quái
+        if (partToRotate != null)
+        {
+            Vector3 dir = target.position - transform.position;
+            Quaternion lookRot = Quaternion.LookRotation(dir);
+            // Lerp giúp xoay mượt mà hơn
+            Vector3 rotation = Quaternion.Lerp(partToRotate.rotation, lookRot, Time.deltaTime * 10f).eulerAngles;
+            partToRotate.rotation = Quaternion.Euler(0f, rotation.y, 0f);
+        }
+    }
+
+    // Hàm bắn (Sẽ được viết đè ở các loại tháp Cannon, Laser khác nhau)
+    protected virtual void Shoot()
+    {
+        Debug.Log(gameObject.name + " bắn mục tiêu: " + target.name);
+        fireCountdown = 1f / fireRate; // Nạp lại đạn (Ví dụ fireRate = 2 thì mất 0.5s để bắn viên tiếp theo)
+
+        // Buổi sau chúng ta sẽ chèn lệnh gọi đạn (Projectile) từ Object Pool tại đây!
+    }
+
+    // Hàm này giúp vẽ một vòng tròn màu đỏ bao quanh tháp trong Scene để bạn dễ hình dung Tầm Bắn
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, range);
+    }
+}
