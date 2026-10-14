@@ -126,7 +126,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentState: 0
   range: 1.5
-  fireRate: 1
+  fireRate: 0.5
   enemyMask:
     serializedVersion: 2
     m_Bits: 64

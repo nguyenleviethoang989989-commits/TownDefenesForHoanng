@@ -20,7 +20,12 @@ public class BaseTower : MonoBehaviour
 
     protected virtual void Update()
     {
-        // State Machine điều khiển hành vi của tháp
+        // Đếm ngược thời gian nạp đạn LIÊN TỤC mỗi frame
+        if (fireCountdown > 0)
+        {
+            fireCountdown -= Time.deltaTime;
+        }
+
         switch (currentState)
         {
             case TowerState.Idle:
@@ -29,7 +34,7 @@ public class BaseTower : MonoBehaviour
 
             case TowerState.Tracking:
                 TrackTarget();
-                // Nếu có mục tiêu và súng đã nạp đạn xong -> Chuyển sang Shooting
+                // CHỈ CHO PHÉP CHUYỂN SANG SHOOTING KHI ĐÃ ĐẾM NGƯỢC XONG
                 if (target != null && fireCountdown <= 0f)
                 {
                     currentState = TowerState.Shooting;
@@ -37,15 +42,9 @@ public class BaseTower : MonoBehaviour
                 break;
 
             case TowerState.Shooting:
-                Shoot();
-                currentState = TowerState.Tracking; // Bắn xong lập tức quay lại nhìn theo quái
+                Shoot(); // Khi bắn xong, hàm Shoot sẽ reset fireCountdown = 1f/fireRate
+                currentState = TowerState.Tracking;
                 break;
-        }
-
-        // Đếm ngược thời gian nạp đạn
-        if (fireCountdown > 0)
-        {
-            fireCountdown -= Time.deltaTime;
         }
     }
 

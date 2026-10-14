@@ -2,13 +2,20 @@
 
 public class TowerCannon : BaseTower
 {
-    public Transform firePoint; // Điểm bắn trên nòng súng
+    public Transform firePoint;
+    public GameObject cannonPrefab; // Kéo Prefab Ammo_Cannon vào đây
 
     protected override void Shoot()
     {
+        // GỌI HÀM CỦA LỚP CHA ĐỂ KÍCH HOẠT ĐẾM NGƯỢC (RẤT QUAN TRỌNG)
+        base.Shoot();
         if (target == null || firePoint == null) return;
 
-        Debug.Log(gameObject.name + " bắn đạn Cannon vào: " + target.name);
-        // Sau này: ObjectPool.Instance.SpawnFromPool("Đạn Cannon", firePoint.position, firePoint.rotation);
+        GameObject ammo = Instantiate(cannonPrefab, firePoint.position, firePoint.rotation);
+        CannonProjectile proj = ammo.GetComponent<CannonProjectile>();
+        if (proj != null)
+        {
+            proj.Seek(target);
+        }
     }
 }

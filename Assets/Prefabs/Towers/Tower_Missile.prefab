@@ -121,13 +121,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentState: 0
   range: 2
-  fireRate: 1
+  fireRate: 0.5
   enemyMask:
     serializedVersion: 2
     m_Bits: 64
   partToRotate: {fileID: 6614792144437392405}
   firePoint: {fileID: 2581533033047537416}
-  explosionRadius: 2
+  missilePrefab: {fileID: 2755590493337715541, guid: 22416559dd68154468940a7cadcbef98, type: 3}
 --- !u!4 &5635172322336647516 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 15545918091134c42a71adfc0a145973, type: 3}

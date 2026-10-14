@@ -9,6 +9,8 @@ public class TowerIce : BaseTower
 
     protected override void Shoot()
     {
+        // GỌI HÀM CỦA LỚP CHA ĐỂ KÍCH HOẠT ĐẾM NGƯỢC (RẤT QUAN TRỌNG)
+        base.Shoot();
         if (target == null || firePoint == null) return;
 
         // Cần có fileRate (Ví dụ 1.5) để tháp không bắn liên tục như súng máy
