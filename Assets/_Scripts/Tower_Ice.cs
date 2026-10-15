@@ -6,13 +6,23 @@ public class TowerIce : BaseTower
     public Transform firePoint;
     // Tạm thời kéo Prefab vào đây, sau này sẽ dùng ObjectPool.SpawnFromPool("AmmoIce")
     public GameObject iceProjectilePrefab;
+    [Header("Âm thanh súng")]
+    private AudioSource shootAudio;
 
+    private void Awake()
+    {
+        shootAudio = GetComponent<AudioSource>();
+    }
     protected override void Shoot()
     {
         // GỌI HÀM CỦA LỚP CHA ĐỂ KÍCH HOẠT ĐẾM NGƯỢC (RẤT QUAN TRỌNG)
         base.Shoot();
         if (target == null || firePoint == null) return;
-
+        // Phát tiếng phép thuật băng/laze
+        if (shootAudio != null)
+        {
+            shootAudio.Play();
+        }
         // Cần có fileRate (Ví dụ 1.5) để tháp không bắn liên tục như súng máy
 
         Debug.Log(gameObject.name + " bắn Đạn Băng vào: " + target.name);

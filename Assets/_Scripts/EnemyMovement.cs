@@ -11,6 +11,7 @@ public class EnemyMovement : MonoBehaviour
     public int rewardMoney = 10;
     public float yOffset = 0.5f;
 
+
     private List<PathNode> pathNodes;
     private int currentNodeIndex;
 
@@ -18,11 +19,17 @@ public class EnemyMovement : MonoBehaviour
     private Pathfinding pathfinding;
     private GridManager gridManager;
 
+
+    [Header("Âm thanh")]
+    private AudioSource spawnAudio; // Biến âm thanh
+
     private void Awake()
     {
         // Tìm 2 hệ thống này ngay khi game bắt đầu
         pathfinding = FindFirstObjectByType<Pathfinding>();
         gridManager = FindFirstObjectByType<GridManager>();
+        // Lấy component AudioSource đã gắn trên con quái
+        spawnAudio = GetComponent<AudioSource>();
     }
 
     protected virtual void OnEnable()
@@ -45,6 +52,12 @@ public class EnemyMovement : MonoBehaviour
     {
         currentHP = maxHP;
         GetPathFromAStar();
+
+        // Kích hoạt tiếng bước chân/spawn
+        if (spawnAudio != null)
+        {
+            spawnAudio.Play();
+        }
     }
 
     private void GetPathFromAStar()
