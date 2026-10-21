@@ -122,9 +122,20 @@ public class EnemyMovement : MonoBehaviour
 
     protected virtual void ReachBase()
     {
-        Debug.Log(gameObject.name + " đã lọt vào Căn cứ! Trừ máu Base!");
-        // 2. PHÁT SỰ KIỆN TRƯỚC KHI TẮT QUÁI
+        // 1. Trừ máu Căn cứ thông qua GameManager
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.TakeDamage(damageToBase);
+        }
+        else
+        {
+            Debug.LogError("Không tìm thấy GameManager trong Scene!");
+        }
+
+        // 2. PHÁT SỰ KIỆN TRƯỚC KHI TẮT QUÁI (Giữ nguyên từ bài trước)
         OnEnemyRemoved?.Invoke(gameObject);
+
+        // 3. Tắt quái (Trả về Object Pool)
         gameObject.SetActive(false);
     }
 
