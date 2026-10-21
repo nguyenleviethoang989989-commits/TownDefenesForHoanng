@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class EnemyMovement : MonoBehaviour
 {
@@ -22,7 +23,9 @@ public class EnemyMovement : MonoBehaviour
 
     [Header("Âm thanh")]
     private AudioSource spawnAudio; // Biến âm thanh
-
+    // 1. KHAI BÁO SỰ KIỆN OBSERVER TOÀN CỤC
+    // Sự kiện này sẽ truyền đi GameObject của con quái vừa biến mất
+    public static event Action<GameObject> OnEnemyRemoved;
     private void Awake()
     {
         // Tìm 2 hệ thống này ngay khi game bắt đầu
@@ -120,6 +123,8 @@ public class EnemyMovement : MonoBehaviour
     protected virtual void ReachBase()
     {
         Debug.Log(gameObject.name + " đã lọt vào Căn cứ! Trừ máu Base!");
+        // 2. PHÁT SỰ KIỆN TRƯỚC KHI TẮT QUÁI
+        OnEnemyRemoved?.Invoke(gameObject);
         gameObject.SetActive(false);
     }
 
@@ -135,6 +140,8 @@ public class EnemyMovement : MonoBehaviour
     protected virtual void Die()
     {
         Debug.Log(gameObject.name + " đã bị tiêu diệt! Nhận " + rewardMoney + " tiền.");
+        // 2. PHÁT SỰ KIỆN TRƯỚC KHI TẮT QUÁI
+        OnEnemyRemoved?.Invoke(gameObject);
         gameObject.SetActive(false);
     }
 }

@@ -47,6 +47,31 @@ public class BaseTower : MonoBehaviour
                 break;
         }
     }
+    // --- BẮT ĐẦU PHẦN OBSERVER PATTERN ---
+    protected virtual void OnEnable()
+    {
+        // Khi Tháp được bật, đăng ký lắng nghe sự kiện quái chết
+        EnemyMovement.OnEnemyRemoved += HandleEnemyRemoved;
+    }
+
+    protected virtual void OnDisable()
+    {
+        // Khi Tháp bị tắt/xóa, BẮT BUỘC phải hủy lắng nghe
+        EnemyMovement.OnEnemyRemoved -= HandleEnemyRemoved;
+    }
+
+    // Hàm này sẽ tự động chạy mỗi khi có BẤT KỲ con quái nào chết hoặc lọt vào base
+    private void HandleEnemyRemoved(GameObject removedEnemy)
+    {
+        // Kiểm tra xem con quái vừa chết có đúng là mục tiêu tháp đang ngắm không?
+        if (target != null && target.gameObject == removedEnemy)
+        {
+            // Nếu đúng, lập tức reset mục tiêu và quay về trạng thái quét tìm mồi mới
+            target = null;
+            currentState = TowerState.Idle;
+        }
+    }
+    // --- KẾT THÚC PHẦN OBSERVER PATTERN ---
 
     // Hàm quét mục tiêu bằng Physics.OverlapSphere
     private void FindTarget()
@@ -82,9 +107,9 @@ public class BaseTower : MonoBehaviour
 
     // Hàm bám theo mục tiêu (Xoay nòng súng)
     private void TrackTarget()
-    {
+    {// Việc check quái chết (!activeInHierarchy) đã được Observer lo.
         // Kiểm tra xem quái đã chết (bị cất vào pool), hoặc chạy ra khỏi tầm bắn chưa
-        if (target == null || !target.gameObject.activeInHierarchy || Vector3.Distance(transform.position, target.position) > range)
+        if (target == null || Vector3.Distance(transform.position, target.position) > range)
         {
             target = null;
             currentState = TowerState.Idle; // Mất dấu -> Trở về trạng thái nghỉ tìm mồi mới
