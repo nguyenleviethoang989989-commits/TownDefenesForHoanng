@@ -135,7 +135,7 @@ MonoBehaviour:
     m_Bits: 64
   partToRotate: {fileID: 4037315971855595257}
   firePoint: {fileID: 8270128851710385739}
-  iceProjectilePrefab: {fileID: 0}
+  iceProjectilePrefab: {fileID: 6397399722921981290, guid: a109863b4c81d94448c0303fee6b3fca, type: 3}
 --- !u!82 &1268572899913094104
 AudioSource:
   m_ObjectHideFlags: 0

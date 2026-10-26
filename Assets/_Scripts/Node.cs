@@ -60,5 +60,13 @@ public class Node : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         }
 
         Debug.Log("Bạn vừa click vào Node: " + gameObject.name + " - Chuẩn bị xây tháp!");
+
+        // Gọi BuildManager để hiển thị UI chọn tháp và truyền Node hiện tại (this) vào
+        if (BuildManager.Instance != null)
+        {
+            // Do trong BuildManager hàm SelectNode nhận tham số là PathNode, 
+            // mà script này của bạn tên là Node, nên bạn cần sửa lại tham số trong BuildManager
+            BuildManager.Instance.SelectNode(this);
+        }
     }
 }
