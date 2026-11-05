@@ -164,7 +164,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHP: 50
   currentHP: 0
-  moveSpeed: 6
+  moveSpeed: 3
   damageToBase: 1
   rewardMoney: 10
   yOffset: 0.5

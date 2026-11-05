@@ -162,9 +162,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a48f1c232d649da4599806a82e5948f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 100
+  maxHP: 40
   currentHP: 0
-  moveSpeed: 3
+  moveSpeed: 1.5
   damageToBase: 1
   rewardMoney: 10
   yOffset: 0.5

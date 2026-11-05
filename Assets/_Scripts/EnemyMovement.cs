@@ -151,8 +151,14 @@ public class EnemyMovement : MonoBehaviour
     protected virtual void Die()
     {
         Debug.Log(gameObject.name + " đã bị tiêu diệt! Nhận " + rewardMoney + " tiền.");
+        // Gọi hệ thống tiền và cộng số tiền thưởng (rewardMoney đã khai báo ở đầu class)
+        if (CurrencySystem.Instance != null)
+        {
+            CurrencySystem.Instance.AddMoney(rewardMoney);
+        }
         // 2. PHÁT SỰ KIỆN TRƯỚC KHI TẮT QUÁI
         OnEnemyRemoved?.Invoke(gameObject);
+        // Trả quái về Object Pool
         gameObject.SetActive(false);
     }
 }

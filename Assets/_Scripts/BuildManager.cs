@@ -9,6 +9,11 @@ public class BuildManager : MonoBehaviour
     public GameObject missilePrefab;
     public GameObject icePrefab;
 
+    [Header("Giá tiền xây Tháp")]
+    public int cannonCost = 20;
+    public int missileCost = 30;
+    public int iceCost = 50;
+
     [Header("UI Chọn Tháp")]
     public GameObject buildUI; // Kéo Panel UI chứa 3 nút vào đây
 
@@ -39,23 +44,37 @@ public class BuildManager : MonoBehaviour
     // Các hàm này sẽ được gắn vào 3 nút bấm trên UI
     public void BuildCannonTower()
     {
-        BuildTower(cannonPrefab);
+        TryBuildTower(cannonPrefab, cannonCost);
     }
 
     public void BuildMissileTower()
     {
-        BuildTower(missilePrefab);
+        TryBuildTower(missilePrefab, missileCost);
     }
 
     public void BuildIceTower()
     {
-        BuildTower(icePrefab);
+        TryBuildTower(icePrefab, iceCost);
     }
 
     // Logic xây tháp thực sự
-    private void BuildTower(GameObject towerPrefab)
+    private void TryBuildTower(GameObject towerPrefab, int cost)
     {
         if (selectedNode == null) return;
+
+        // KIỂM TRA TIỀN TRƯỚC KHI XÂY
+        if (CurrencySystem.Instance != null && !CurrencySystem.Instance.HasEnoughMoney(cost))
+        {
+            Debug.Log("Bạn không đủ tiền để xây tháp này!");
+            CloseUI(); // Đóng bảng chọn
+            return;
+        }
+
+        // TRỪ TIỀN
+        if (CurrencySystem.Instance != null)
+        {
+            CurrencySystem.Instance.SpendMoney(cost);
+        }
 
         // Sinh ra tháp tại vị trí của Node, nâng y lên 1 chút để tháp không bị lún
         Vector3 buildPos = selectedNode.transform.position;
