@@ -14,10 +14,12 @@ public class BuildManager : MonoBehaviour
     public int missileCost = 30;
     public int iceCost = 50;
 
-    [Header("UI Chọn Tháp")]
-    public GameObject buildUI; // Kéo Panel UI chứa 3 nút vào đây
+    [Header("Giao diện UI")]
+    public GameObject buildUI;     // Bảng chọn loại tháp để xây
+    public GameObject upgradeUI;   // Bảng Nâng cấp / Bán tháp
 
-    private Node selectedNode; // Lưu trữ Node đang được chọn
+    private Node selectedNode;              // Lưu trữ Node đang được chọn
+    private BaseTower selectedTowerToUpgrade; // Lưu trữ tháp trên Node đang được chọn
 
     private void Awake()
     {
@@ -27,21 +29,84 @@ public class BuildManager : MonoBehaviour
 
     private void Start()
     {
-        buildUI.SetActive(false); // Ẩn UI khi mới vào game
+        if (buildUI != null) buildUI.SetActive(false);
+        if (upgradeUI != null) upgradeUI.SetActive(false);
     }
 
-    // Hàm này được gọi khi bạn click vào 1 cục đất (Node)
+    // Hàm này được gọi khi click vào 1 ô đất (Node)
     public void SelectNode(Node node)
     {
-        // Nếu ô đất đã có tháp rồi thì không cho xây nữa
-        // Giả sử PathNode có biến bool hasTower, nếu chưa có bạn có thể tự thêm vào PathNode.cs
-        /* if (node.hasTower) return; */
-
         selectedNode = node;
-        buildUI.SetActive(true); // Hiện bảng chọn tháp lên
+
+        // Nếu ô đất đã có tháp -> Mở UI Nâng cấp/Bán, ẩn UI Xây
+        if (node.currentTower != null)
+        {
+            selectedTowerToUpgrade = node.currentTower.GetComponent<BaseTower>();
+
+            if (upgradeUI != null) upgradeUI.SetActive(true);
+            if (buildUI != null) buildUI.SetActive(false);
+        }
+        else // Ngược lại nếu ô đất còn trống -> Mở UI Xây, ẩn UI Nâng cấp/Bán
+        {
+            selectedTowerToUpgrade = null;
+
+            if (buildUI != null) buildUI.SetActive(true);
+            if (upgradeUI != null) upgradeUI.SetActive(false);
+        }
     }
 
-    // Các hàm này sẽ được gắn vào 3 nút bấm trên UI
+    // Nâng cấp tháp đang chọn
+    public void UpgradeSelectedTower()
+    {
+        if (selectedTowerToUpgrade == null) return;
+
+        // Kiểm tra xem tháp đã đạt level tối đa chưa
+        if (selectedTowerToUpgrade.towerLevel >= 2)
+        {
+            Debug.Log("Tháp đã đạt cấp tối đa!");
+            CloseUI();
+            return;
+        }
+
+        // Kiểm tra tiền
+        if (CurrencySystem.Instance != null && !CurrencySystem.Instance.HasEnoughMoney(selectedTowerToUpgrade.upgradeCost))
+        {
+            Debug.Log("Không đủ tiền để nâng cấp tháp này!");
+            CloseUI();
+            return;
+        }
+
+        // Trừ tiền và gọi hàm nâng cấp của tháp
+        if (CurrencySystem.Instance != null)
+        {
+            CurrencySystem.Instance.SpendMoney(selectedTowerToUpgrade.upgradeCost);
+        }
+
+        selectedTowerToUpgrade.UpgradeTower();
+
+        // Đóng UI sau khi nâng cấp
+        CloseUI();
+    }
+
+    // Bán tháp đang chọn
+    public void SellSelectedTower()
+    {
+        if (selectedTowerToUpgrade == null) return;
+
+        // Gọi hàm bán tháp (đã tự cộng tiền và Destroy)
+        selectedTowerToUpgrade.SellTower();
+
+        // Xóa liên kết tháp trên Node
+        if (selectedNode != null)
+        {
+            selectedNode.currentTower = null;
+        }
+
+        // Đóng UI sau khi bán
+        CloseUI();
+    }
+
+    // Các hàm xây tháp gắn vào nút trên Build UI
     public void BuildCannonTower()
     {
         TryBuildTower(cannonPrefab, cannonCost);
@@ -66,7 +131,7 @@ public class BuildManager : MonoBehaviour
         if (CurrencySystem.Instance != null && !CurrencySystem.Instance.HasEnoughMoney(cost))
         {
             Debug.Log("Bạn không đủ tiền để xây tháp này!");
-            CloseUI(); // Đóng bảng chọn
+            CloseUI();
             return;
         }
 
@@ -80,20 +145,21 @@ public class BuildManager : MonoBehaviour
         Vector3 buildPos = selectedNode.transform.position;
         buildPos.y += 0.5f;
 
-        Instantiate(towerPrefab, buildPos, Quaternion.identity);
+        GameObject towerObj = Instantiate(towerPrefab, buildPos, Quaternion.identity);
 
-        // Đánh dấu Node này đã có tháp (nếu bạn có biến hasTower)
-        /* selectedNode.hasTower = true; */
+        // Lưu tháp vừa tạo vào Node để phục vụ việc chọn nâng cấp / bán sau này
+        selectedNode.currentTower = towerObj;
 
-        // Ẩn UI đi sau khi xây xong và xóa lựa chọn Node
-        buildUI.SetActive(false);
-        selectedNode = null;
+        // Đóng UI sau khi xây
+        CloseUI();
     }
 
-    // Hàm để đóng UI nếu người chơi đổi ý không xây nữa
+    // Hàm đóng tất cả UI liên quan đến chọn tháp / nâng cấp
     public void CloseUI()
     {
-        buildUI.SetActive(false);
+        if (buildUI != null) buildUI.SetActive(false);
+        if (upgradeUI != null) upgradeUI.SetActive(false);
         selectedNode = null;
+        selectedTowerToUpgrade = null;
     }
 }

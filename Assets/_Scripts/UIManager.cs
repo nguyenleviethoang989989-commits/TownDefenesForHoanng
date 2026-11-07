@@ -22,6 +22,7 @@ public class UIManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
     // --- BẮT ĐẦU OBSERVER PATTERN CHO TIỀN ---
     private void OnEnable()
     {
@@ -40,14 +41,18 @@ public class UIManager : MonoBehaviour
             CurrencySystem.Instance.OnMoneyChanged -= UpdateMoneyUI;
         }
     }
+
     private void Start()
     {
-        // Chủ động lấy số tiền hiện tại để ép UI cập nhật một lần ngay khi mới vào Game
+        // Đảm bảo đã đăng ký lắng nghe sự kiện nếu lúc OnEnable CurrencySystem chưa kịp khởi tạo Singleton
         if (CurrencySystem.Instance != null)
         {
+            CurrencySystem.Instance.OnMoneyChanged -= UpdateMoneyUI;
+            CurrencySystem.Instance.OnMoneyChanged += UpdateMoneyUI;
             UpdateMoneyUI(CurrencySystem.Instance.GetCurrentMoney());
         }
     }
+
     // Hàm này sẽ TỰ ĐỘNG CHẠY mỗi khi CurrencySystem gọi OnMoneyChanged
     private void UpdateMoneyUI(int currentMoney)
     {
@@ -56,6 +61,7 @@ public class UIManager : MonoBehaviour
             moneyText.text = "Vàng: " + currentMoney;
         }
     }
+
     // Hàm gọi khi Thua
     public void ShowLoseScreen()
     {

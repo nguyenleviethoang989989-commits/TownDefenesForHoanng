@@ -19,6 +19,8 @@ public class CurrencySystem : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            // Khởi tạo tiền ngay trong Awake để khi UIManager kích hoạt thì tiền đã sẵn sàng 100
+            currentMoney = startingMoney;
         }
         else
         {
@@ -29,11 +31,9 @@ public class CurrencySystem : MonoBehaviour
 
     private void Start()
     {
-        // Khởi tạo tiền ban đầu
-        currentMoney = startingMoney;
         Debug.Log("Game bắt đầu! Số tiền khởi điểm: " + currentMoney);
 
-        // Gọi sự kiện để UI cập nhật số tiền ngay lúc bắt đầu
+        // Phát sự kiện để UI cập nhật số tiền ngay lúc bắt đầu
         OnMoneyChanged?.Invoke(currentMoney);
     }
 

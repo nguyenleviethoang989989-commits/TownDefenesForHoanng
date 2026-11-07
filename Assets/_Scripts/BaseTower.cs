@@ -6,10 +6,19 @@ public class BaseTower : MonoBehaviour
     public enum TowerState { Idle, Tracking, Shooting }
     public TowerState currentState = TowerState.Idle;
 
+    [Header("Cấp độ & Kinh tế")]
+    public int towerLevel = 1;
+    public int upgradeCost = 50;
+    public int sellValue = 15;
+
     [Header("Thông số cơ bản")]
     public float range = 3f;      // Tầm bắn của tháp
     public float fireRate = 1f;   // Tốc độ bắn (số viên đạn/giây)
     private float fireCountdown = 0f; // Bộ đếm ngược thời gian bắn
+
+    [Header("Chỉ số sau khi Nâng cấp")]
+    public float upgradedRange = 4.5f;
+    public float upgradedFireRate = 1.8f;
 
     [Header("Nhận diện mục tiêu")]
     public LayerMask enemyMask;   // Chọn Layer "Enemy" ở Inspector
@@ -47,6 +56,7 @@ public class BaseTower : MonoBehaviour
                 break;
         }
     }
+
     // --- BẮT ĐẦU PHẦN OBSERVER PATTERN ---
     protected virtual void OnEnable()
     {
@@ -107,7 +117,7 @@ public class BaseTower : MonoBehaviour
 
     // Hàm bám theo mục tiêu (Xoay nòng súng)
     private void TrackTarget()
-    {// Việc check quái chết (!activeInHierarchy) đã được Observer lo.
+    {
         // Kiểm tra xem quái đã chết (bị cất vào pool), hoặc chạy ra khỏi tầm bắn chưa
         if (target == null || Vector3.Distance(transform.position, target.position) > range)
         {
@@ -132,8 +142,39 @@ public class BaseTower : MonoBehaviour
     {
         Debug.Log(gameObject.name + " bắn mục tiêu: " + target.name);
         fireCountdown = 1f / fireRate; // Nạp lại đạn (Ví dụ fireRate = 2 thì mất 0.5s để bắn viên tiếp theo)
+    }
 
-        // Buổi sau chúng ta sẽ chèn lệnh gọi đạn (Projectile) từ Object Pool tại đây!
+    // Nâng cấp tháp
+    public virtual void UpgradeTower()
+    {
+        if (towerLevel < 2)
+        {
+            towerLevel++;
+            range = upgradedRange;
+            fireRate = upgradedFireRate;
+            sellValue += upgradeCost / 2; // Tăng giá trị bán lại khi nâng cấp
+
+            // Làm tháp to lên theo yêu cầu
+            transform.localScale = new Vector3(1.3f, 1.3f, 1.3f);
+
+            Debug.Log(gameObject.name + " đã được nâng cấp lên Level " + towerLevel + "!");
+        }
+        else
+        {
+            Debug.Log(gameObject.name + " đã đạt cấp độ tối đa!");
+        }
+    }
+
+    // Bán tháp
+    public virtual void SellTower()
+    {
+        if (CurrencySystem.Instance != null)
+        {
+            CurrencySystem.Instance.AddMoney(sellValue);
+        }
+
+        Debug.Log(gameObject.name + " đã được bán với giá " + sellValue + " Vàng!");
+        Destroy(gameObject);
     }
 
     // Hàm này giúp vẽ một vòng tròn màu đỏ bao quanh tháp trong Scene để bạn dễ hình dung Tầm Bắn
