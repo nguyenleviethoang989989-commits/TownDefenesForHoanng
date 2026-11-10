@@ -9,6 +9,11 @@ public class GridManager : MonoBehaviour
     public float cellSize = 1f;
     public GameObject nodePrefab;
 
+    [Header("Cài đặt kích thước A*")]
+    public float nodeRadius = 0.5f; // Đã bổ sung biến nodeRadius
+    public int gridSizeX = 10;      // Đã bổ sung biến gridSizeX
+    public int gridSizeY = 10;      // Đã bổ sung biến gridSizeY
+
     // Layer chứa các khối Đường đi (PathMap)
     public LayerMask unwalkableMask;
 
