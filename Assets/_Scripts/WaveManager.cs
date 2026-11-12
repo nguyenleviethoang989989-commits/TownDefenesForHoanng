@@ -21,8 +21,11 @@ public struct WaveElement
 
 public class WaveManager : MonoBehaviour
 {
+    public static WaveManager Instance;
+
     [Header("Cài đặt Wave")]
-    public Transform spawnPoint; // Điểm quái vật xuất hiện
+    public Transform spawnPoint; // Điểm quái vật xuất hiện (spawnstart)
+    public Transform targetPoint; // Điểm đích đến của quái vật (spawnend / Base)
     public List<Wave> waves; // Danh sách các Wave trong level
 
     [Header("Trạng thái hiện tại")]
@@ -31,6 +34,25 @@ public class WaveManager : MonoBehaviour
 
     private int currentWaveIndex = 0; // Đợt hiện tại
     private bool isSpawning = false;  // Đang trong quá trình sinh quái hay không
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+
+        // Tự động tìm targetPoint nếu chưa gán ở Inspector
+        if (targetPoint == null)
+        {
+            GameObject endObj = GameObject.Find("spawnend");
+            if (endObj != null) targetPoint = endObj.transform;
+        }
+
+        if (spawnPoint == null)
+        {
+            GameObject startObj = GameObject.Find("spawnstart");
+            if (startObj != null) spawnPoint = startObj.transform;
+        }
+    }
 
     private void Start()
     {
@@ -103,7 +125,7 @@ public class WaveManager : MonoBehaviour
             EnemyMovement movement = enemy.GetComponent<EnemyMovement>();
             if (movement != null)
             {
-                movement.SpawnSetup();
+                movement.SpawnSetup(spawnPoint, targetPoint);
             }
         }
     }

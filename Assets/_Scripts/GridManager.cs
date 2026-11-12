@@ -10,11 +10,11 @@ public class GridManager : MonoBehaviour
     public GameObject nodePrefab;
 
     [Header("Cài đặt kích thước A*")]
-    public float nodeRadius = 0.5f; // Đã bổ sung biến nodeRadius
-    public int gridSizeX = 10;      // Đã bổ sung biến gridSizeX
-    public int gridSizeY = 10;      // Đã bổ sung biến gridSizeY
+    public float nodeRadius = 0.5f;
+    public int gridSizeX = 10;
+    public int gridSizeY = 10;
 
-    // Layer chứa các khối Đường đi (PathMap)
+    // Layer chứa các khối Đường đi (PathMap) hoặc vật cản
     public LayerMask unwalkableMask;
 
     // Mảng 2D chứa dữ liệu thuật toán
@@ -40,7 +40,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    // Hàm mới: Quét và nạp dữ liệu cho mảng 2D
+    // Hàm quét và nạp dữ liệu cho mảng 2D
     public void CreatePathNodeData()
     {
         grid = new PathNode[width, height];
@@ -58,6 +58,37 @@ public class GridManager : MonoBehaviour
                 grid[x, y] = new PathNode(walkable, worldPoint, x, y);
             }
         }
+    }
+
+    // Hàm chuyển đổi vị trí thực tế trên Scene (Vector3) sang Node gần nhất trên Grid
+    public PathNode GetNodeFromWorldPosition(Vector3 worldPos)
+    {
+        if (grid == null) return null;
+
+        PathNode closestNode = null;
+        float minDistance = float.MaxValue;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                PathNode node = grid[x, y];
+                if (node != null)
+                {
+                    Vector3 nodePosFlat = new Vector3(node.worldPosition.x, 0, node.worldPosition.z);
+                    Vector3 targetPosFlat = new Vector3(worldPos.x, 0, worldPos.z);
+
+                    float distance = Vector3.Distance(nodePosFlat, targetPosFlat);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        closestNode = node;
+                    }
+                }
+            }
+        }
+
+        return closestNode;
     }
 
     // Hàm lấy 4 hàng xóm xung quanh một Node

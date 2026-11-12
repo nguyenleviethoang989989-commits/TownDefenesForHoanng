@@ -2,9 +2,9 @@
 
 public class WaveSpawnerTest : MonoBehaviour
 {
-    public Transform spawnPoint; // Điểm xuất phát
+    public Transform spawnPoint;  // Điểm xuất phát
+    public Transform targetPoint; // Điểm kết thúc
 
-    // Danh sách các tag phải khớp chính xác với Tag đã đặt trong ObjectPoolManager
     private string[] enemyTags = { "EnemyNormal", "EnemyFast", "EnemyTanker", "EnemyBoss" };
 
     [ContextMenu("Test Spawn Random Enemy")]
@@ -12,24 +12,32 @@ public class WaveSpawnerTest : MonoBehaviour
     {
         if (spawnPoint == null)
         {
-            Debug.LogError("Chưa gán điểm Spawn Point!");
-            return;
+            GameObject startObj = GameObject.Find("spawnstart");
+            if (startObj != null) spawnPoint = startObj.transform;
+            else
+            {
+                Debug.LogError("Chưa gán điểm Spawn Point!");
+                return;
+            }
         }
 
-        // Chọn ngẫu nhiên 1 trong 4 loại quái
+        if (targetPoint == null)
+        {
+            GameObject endObj = GameObject.Find("spawnend");
+            if (endObj != null) targetPoint = endObj.transform;
+        }
+
         int randomIndex = Random.Range(0, enemyTags.Length);
         string selectedTag = enemyTags[randomIndex];
 
-        // Lấy quái từ Pool ra
         GameObject enemy = ObjectPool.Instance.SpawnFromPool(selectedTag, spawnPoint.position, spawnPoint.rotation);
 
         if (enemy != null)
         {
-            // BẮT BUỘC: Gọi hàm Setup để quái làm mới lại HP và tìm đường A*
             EnemyMovement movement = enemy.GetComponent<EnemyMovement>();
             if (movement != null)
             {
-                movement.SpawnSetup();
+                movement.SpawnSetup(spawnPoint, targetPoint);
             }
 
             Debug.Log("Đã gọi thành công: " + selectedTag);

@@ -12,6 +12,9 @@ public class EnemyMovement : MonoBehaviour
     public int rewardMoney = 10;
     public float yOffset = 0.5f;
 
+    [Header("Điểm mốc di chuyển (Tùy chọn)")]
+    public Transform customStartPoint;
+    public Transform customTargetPoint;
 
     private List<PathNode> pathNodes;
     private int currentNodeIndex;
@@ -20,41 +23,44 @@ public class EnemyMovement : MonoBehaviour
     private Pathfinding pathfinding;
     private GridManager gridManager;
 
-
     [Header("Âm thanh")]
     private AudioSource spawnAudio; // Biến âm thanh
+
     // 1. KHAI BÁO SỰ KIỆN OBSERVER TOÀN CỤC
-    // Sự kiện này sẽ truyền đi GameObject của con quái vừa biến mất
     public static event Action<GameObject> OnEnemyRemoved;
+
     private void Awake()
     {
         // Tìm 2 hệ thống này ngay khi game bắt đầu
         pathfinding = FindFirstObjectByType<Pathfinding>();
         gridManager = FindFirstObjectByType<GridManager>();
-        // Lấy component AudioSource đã gắn trên con quái
         spawnAudio = GetComponent<AudioSource>();
     }
 
     protected virtual void OnEnable()
     {
         currentHP = maxHP;
-
-        // CHÚ Ý: KHÔNG gọi GetPathFromAStar() ở đây nữa nếu quái được đặt sẵn trên Scene
-        // Object Pool sẽ tự gọi hàm SpawnSetup() sau khi bật quái lên.
     }
 
     private void Start()
     {
-        // Hàm Start chạy sau Awake và OnEnable. Lúc này Grid chắc chắn đã vẽ xong.
-        // Dành cho việc bạn test thả quái trực tiếp trên Scene bằng tay:
-        GetPathFromAStar();
+        // Dành cho việc test quái đặt sẵn trên Scene bằng tay
+        if (pathNodes == null || pathNodes.Count == 0)
+        {
+            GetPathFromAStar(customStartPoint, customTargetPoint);
+        }
     }
 
-    // Object Pool sẽ gọi hàm này sau khi lấy quái từ kho ra
-    public void SpawnSetup()
+    // Object Pool hoặc WaveManager sẽ gọi hàm này sau khi lấy quái từ kho ra
+    public void SpawnSetup(Transform start = null, Transform target = null)
     {
         currentHP = maxHP;
-        GetPathFromAStar();
+
+        // Nếu truyền tham số vào thì dùng, không thì dùng custom/tự tìm
+        Transform s = start != null ? start : customStartPoint;
+        Transform t = target != null ? target : customTargetPoint;
+
+        GetPathFromAStar(s, t);
 
         // Kích hoạt tiếng bước chân/spawn
         if (spawnAudio != null)
@@ -63,20 +69,60 @@ public class EnemyMovement : MonoBehaviour
         }
     }
 
-    private void GetPathFromAStar()
+    public void GetPathFromAStar(Transform startPoint = null, Transform targetPoint = null)
     {
+        if (pathfinding == null) pathfinding = FindFirstObjectByType<Pathfinding>();
+        if (gridManager == null) gridManager = FindFirstObjectByType<GridManager>();
+
         if (pathfinding != null && gridManager != null && gridManager.grid != null)
         {
-            // Tọa độ Start (0,3) và End (8,1) theo hình ảnh map của bạn
-            PathNode startNode = gridManager.grid[0, 3];
-            PathNode endNode = gridManager.grid[8, 1];
+            // 1. Xác định vị trí xuất phát
+            Vector3 startPos = startPoint != null ? startPoint.position : transform.position;
 
-            pathNodes = pathfinding.FindPath(startNode, endNode);
-            currentNodeIndex = 0;
-
-            if (pathNodes != null && pathNodes.Count > 0)
+            // 2. Xác định vị trí đích đến
+            Vector3 endPos;
+            if (targetPoint != null)
             {
-                transform.position = pathNodes[0].worldPosition;
+                endPos = targetPoint.position;
+            }
+            else if (WaveManager.Instance != null && WaveManager.Instance.targetPoint != null)
+            {
+                endPos = WaveManager.Instance.targetPoint.position;
+            }
+            else
+            {
+                // Thử tìm object spawnend trong Scene
+                GameObject endObj = GameObject.Find("spawnend");
+                if (endObj != null)
+                {
+                    endPos = endObj.transform.position;
+                }
+                else
+                {
+                    // Dự phòng nếu không tìm thấy
+                    endPos = gridManager.grid[8, 1].worldPosition;
+                }
+            }
+
+            // 3. Quy đổi sang PathNode trên Grid động theo vị trí thực tế
+            PathNode startNode = gridManager.GetNodeFromWorldPosition(startPos);
+            PathNode endNode = gridManager.GetNodeFromWorldPosition(endPos);
+
+            if (startNode != null && endNode != null)
+            {
+                pathNodes = pathfinding.FindPath(startNode, endNode);
+                currentNodeIndex = 0;
+
+                if (pathNodes != null && pathNodes.Count > 0)
+                {
+                    Vector3 initPos = pathNodes[0].worldPosition;
+                    initPos.y += yOffset;
+                    transform.position = initPos;
+                }
+            }
+            else
+            {
+                Debug.LogError(gameObject.name + ": Điểm Start hoặc End nằm ngoài phạm vi Grid!");
             }
         }
         else
@@ -122,7 +168,6 @@ public class EnemyMovement : MonoBehaviour
 
     protected virtual void ReachBase()
     {
-        // 1. Trừ máu Căn cứ thông qua GameManager
         if (GameManager.Instance != null)
         {
             GameManager.Instance.TakeDamage(damageToBase);
@@ -132,10 +177,7 @@ public class EnemyMovement : MonoBehaviour
             Debug.LogError("Không tìm thấy GameManager trong Scene!");
         }
 
-        // 2. PHÁT SỰ KIỆN TRƯỚC KHI TẮT QUÁI (Giữ nguyên từ bài trước)
         OnEnemyRemoved?.Invoke(gameObject);
-
-        // 3. Tắt quái (Trả về Object Pool)
         gameObject.SetActive(false);
     }
 
@@ -151,14 +193,11 @@ public class EnemyMovement : MonoBehaviour
     protected virtual void Die()
     {
         Debug.Log(gameObject.name + " đã bị tiêu diệt! Nhận " + rewardMoney + " tiền.");
-        // Gọi hệ thống tiền và cộng số tiền thưởng (rewardMoney đã khai báo ở đầu class)
         if (CurrencySystem.Instance != null)
         {
             CurrencySystem.Instance.AddMoney(rewardMoney);
         }
-        // 2. PHÁT SỰ KIỆN TRƯỚC KHI TẮT QUÁI
         OnEnemyRemoved?.Invoke(gameObject);
-        // Trả quái về Object Pool
         gameObject.SetActive(false);
     }
 }

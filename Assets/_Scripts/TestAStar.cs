@@ -27,8 +27,8 @@ public class TestAStar : MonoBehaviour
         }
 
         // 2. Chuyển đổi tọa độ không gian (World Position) của 2 điểm mốc sang chỉ số Grid (X, Y)
-        PathNode startNode = GetNodeFromWorldPosition(spawnPoint.position);
-        PathNode endNode = GetNodeFromWorldPosition(basePoint.position);
+        PathNode startNode = gridManager.GetNodeFromWorldPosition(spawnPoint.position);
+        PathNode endNode = gridManager.GetNodeFromWorldPosition(basePoint.position);
 
         if (startNode == null || endNode == null)
         {
@@ -40,43 +40,5 @@ public class TestAStar : MonoBehaviour
         pathfinding.FindPath(startNode, endNode);
 
         Debug.Log($"Đã chạy A* từ ({startNode.gridX},{startNode.gridY}) đến ({endNode.gridX},{endNode.gridY})");
-    }
-
-    // Hàm chuyển đổi vị trí thực tế trên Scene sang ô (Node) trên Grid
-    // Hàm chuyển đổi vị trí thực tế trên Scene sang ô (Node) trên Grid - PHIÊN BẢN CẢI TIẾN
-    private PathNode GetNodeFromWorldPosition(Vector3 worldPos)
-    {
-        // 1. Kiểm tra an toàn
-        if (gridManager == null || gridManager.grid == null) return null;
-
-        // 2. Tìm Node có khoảng cách gần nhất với điểm mốc (worldPos)
-        PathNode closestNode = null;
-        float minDistance = float.MaxValue;
-
-        // Quét toàn bộ Grid để tìm Node gần điểm mốc nhất
-        for (int x = 0; x < gridManager.gridSizeX; x++)
-        {
-            for (int y = 0; y < gridManager.gridSizeY; y++) // Chú ý: dùng gridSizeY (trục dọc của mảng 2D)
-            {
-                PathNode node = gridManager.grid[x, y];
-                if (node != null)
-                {
-                    // Tính khoảng cách từ Node đến điểm mốc (bỏ qua trục Y độ cao để tránh sai số)
-                    Vector3 nodePosFlat = new Vector3(node.worldPosition.x, 0, node.worldPosition.z);
-                    Vector3 targetPosFlat = new Vector3(worldPos.x, 0, worldPos.z);
-
-                    float distance = Vector3.Distance(nodePosFlat, targetPosFlat);
-
-                    // Nếu khoảng cách này nhỏ hơn khoảng cách nhỏ nhất từng ghi nhận
-                    if (distance < minDistance)
-                    {
-                        minDistance = distance;
-                        closestNode = node;
-                    }
-                }
-            }
-        }
-
-        return closestNode;
     }
 }
