@@ -12,7 +12,12 @@ public class MapSelectorUI : MonoBehaviour
 
     private void Update()
     {
-        // Hỗ trợ cả New Input System và Legacy Input để không bao giờ bị InvalidOperationException
+        // Nếu game chưa bắt đầu (vẫn đang ở UI Main Menu hoặc Loading), không nhận phím chuyển map
+        if (MainMenuUIController.Instance != null && !MainMenuUIController.Instance.isGameStarted)
+        {
+            return;
+        }
+
 #if ENABLE_INPUT_SYSTEM
         if (Keyboard.current != null && (Keyboard.current.mKey.wasPressedThisFrame || Keyboard.current.tabKey.wasPressedThisFrame))
         {
@@ -24,7 +29,6 @@ public class MapSelectorUI : MonoBehaviour
             showMenu = !showMenu;
         }
 #else
-        // Dự phòng nếu không xác định được define symbol
         try
         {
             if (Input.GetKeyDown(KeyCode.M) || Input.GetKeyDown(KeyCode.Tab))
@@ -34,13 +38,29 @@ public class MapSelectorUI : MonoBehaviour
         }
         catch
         {
-            // Bỏ qua lỗi nếu dự án đang bật chế độ thuần New Input System
         }
 #endif
     }
 
     private void OnGUI()
     {
+        // ẨN TOÀN BỘ KHI Ở MENU, LOADING HOẶC ĐÃ GAME OVER / WIN!
+        if (MainMenuUIController.Instance != null && !MainMenuUIController.Instance.isGameStarted)
+        {
+            return;
+        }
+
+        if (GameManager.Instance != null && GameManager.Instance.isGameOver)
+        {
+            return;
+        }
+
+        // Ẩn nút Chọn Map khi đang Pause Game
+        if (PauseManager.Instance != null && PauseManager.Instance.isPaused)
+        {
+            return;
+        }
+
         if (buttonStyle == null)
         {
             buttonStyle = new GUIStyle(GUI.skin.button);
@@ -54,7 +74,7 @@ public class MapSelectorUI : MonoBehaviour
 
         string currentScene = SceneManager.GetActiveScene().name;
 
-        // Nút toggle cố định bằng chuột ở góc trên bên phải màn hình
+        // Chỉ hiển thị nút toggle khi đã vào màn hình chơi game
         if (GUI.Button(new Rect(Screen.width - 150, 10, 140, 35), showMenu ? "Đóng Menu Map" : "Chọn Map (Phím M)"))
         {
             showMenu = !showMenu;

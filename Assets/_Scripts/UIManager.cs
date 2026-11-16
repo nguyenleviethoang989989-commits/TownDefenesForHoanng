@@ -26,7 +26,6 @@ public class UIManager : MonoBehaviour
     // --- BẮT ĐẦU OBSERVER PATTERN CHO TIỀN ---
     private void OnEnable()
     {
-        // Khi UIManager được bật, lập tức lắng nghe sự kiện OnMoneyChanged từ CurrencySystem
         if (CurrencySystem.Instance != null)
         {
             CurrencySystem.Instance.OnMoneyChanged += UpdateMoneyUI;
@@ -35,7 +34,6 @@ public class UIManager : MonoBehaviour
 
     private void OnDisable()
     {
-        // Phải HỦY lắng nghe khi bị tắt để tránh lỗi Memory Leak
         if (CurrencySystem.Instance != null)
         {
             CurrencySystem.Instance.OnMoneyChanged -= UpdateMoneyUI;
@@ -44,7 +42,6 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        // Đảm bảo đã đăng ký lắng nghe sự kiện nếu lúc OnEnable CurrencySystem chưa kịp khởi tạo Singleton
         if (CurrencySystem.Instance != null)
         {
             CurrencySystem.Instance.OnMoneyChanged -= UpdateMoneyUI;
@@ -67,9 +64,31 @@ public class UIManager : MonoBehaviour
     {
         if (gameOverPanel != null)
         {
-            gameOverPanel.SetActive(true); // Bật panel lên
-            titleText.text = "CĂN CỨ BỊ PHÁ HỦY!";
-            titleText.color = Color.red;
+            // Đưa gameOverPanel lên trên cùng
+            Canvas gameOverCanvas = gameOverPanel.GetComponentInParent<Canvas>();
+            if (gameOverCanvas != null)
+            {
+                gameOverCanvas.sortingOrder = 90; // Cao hơn UiMoney (0) và thấp hơn Menu (100)
+            }
+            gameOverPanel.transform.SetAsLastSibling();
+            gameOverPanel.SetActive(true);
+
+            // Cập nhật tiêu đề Game Over
+            if (titleText != null)
+            {
+                titleText.text = "GAME OVER";
+                titleText.color = Color.red;
+            }
+
+            // Ẩn UiMoney khi hiện GameOver
+            GameObject uiMoney = GameObject.Find("UiMoney");
+            if (uiMoney != null) uiMoney.SetActive(false);
+
+            // Ẩn nút Speaker In-Game khi hiện GameOver
+            if (MainMenuUIController.Instance != null && MainMenuUIController.Instance.inGameSoundButton != null)
+            {
+                MainMenuUIController.Instance.inGameSoundButton.SetActive(false);
+            }
         }
     }
 
@@ -78,24 +97,52 @@ public class UIManager : MonoBehaviour
     {
         if (gameOverPanel != null)
         {
+            Canvas gameOverCanvas = gameOverPanel.GetComponentInParent<Canvas>();
+            if (gameOverCanvas != null)
+            {
+                gameOverCanvas.sortingOrder = 90;
+            }
+            gameOverPanel.transform.SetAsLastSibling();
             gameOverPanel.SetActive(true);
-            titleText.text = "BẠN ĐÃ CHIẾN THẮNG!";
-            titleText.color = Color.green;
+
+            if (titleText != null)
+            {
+                titleText.text = "VICTORY!";
+                titleText.color = Color.green;
+            }
+
+            GameObject uiMoney = GameObject.Find("UiMoney");
+            if (uiMoney != null) uiMoney.SetActive(false);
+
+            if (MainMenuUIController.Instance != null && MainMenuUIController.Instance.inGameSoundButton != null)
+            {
+                MainMenuUIController.Instance.inGameSoundButton.SetActive(false);
+            }
         }
     }
 
     // Gắn vào nút "Chơi Lại"
     public void RestartGame()
     {
-        Time.timeScale = 1f; // Phải đưa time về lại 1 trước khi load
-        // Load lại Scene hiện tại đang chơi
+        Time.timeScale = 1f; // Trả lại timeScale bình thường
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    // Gắn vào nút "Về Menu" (Nếu bạn có Scene Menu)
+    // Gắn vào nút "Về Menu"
     public void GoToMenu()
     {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene("MenuScene"); // Đổi tên này cho đúng tên file Scene menu của bạn
+        Time.timeScale = 1f; // Bắt buộc trả timeScale về 1f
+
+        // Nếu Scene hiện tại có MainMenuUIController, mở lại Menu ngay lập tức
+        if (MainMenuUIController.Instance != null)
+        {
+            // Reset trạng thái và tải lại Scene hiện tại để bắt đầu từ UI Menu
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        else
+        {
+            // Hoặc load về SampleScene (Màn chính)
+            SceneManager.LoadScene(0);
+        }
     }
 }
