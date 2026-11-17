@@ -23,6 +23,9 @@ public class EnemyMovement : MonoBehaviour
     private Pathfinding pathfinding;
     private GridManager gridManager;
 
+    [Header("UI Máu")]
+    public EnemyHealthUI healthUI;
+
     [Header("Âm thanh")]
     private AudioSource spawnAudio; // Biến âm thanh
 
@@ -35,11 +38,16 @@ public class EnemyMovement : MonoBehaviour
         pathfinding = FindFirstObjectByType<Pathfinding>();
         gridManager = FindFirstObjectByType<GridManager>();
         spawnAudio = GetComponent<AudioSource>();
+        if (healthUI == null) healthUI = GetComponentInChildren<EnemyHealthUI>();
     }
 
     protected virtual void OnEnable()
     {
         currentHP = maxHP;
+        if (healthUI != null)
+        {
+            healthUI.UpdateHealth(currentHP, maxHP);
+        }
     }
 
     private void Start()
@@ -55,6 +63,10 @@ public class EnemyMovement : MonoBehaviour
     public void SpawnSetup(Transform start = null, Transform target = null)
     {
         currentHP = maxHP;
+        if (healthUI != null)
+        {
+            healthUI.UpdateHealth(currentHP, maxHP);
+        }
 
         // Nếu truyền tham số vào thì dùng, không thì dùng custom/tự tìm
         Transform s = start != null ? start : customStartPoint;
@@ -184,6 +196,11 @@ public class EnemyMovement : MonoBehaviour
     public virtual void TakeDamage(float amount)
     {
         currentHP -= amount;
+        if (healthUI != null)
+        {
+            healthUI.UpdateHealth(currentHP, maxHP);
+        }
+
         if (currentHP <= 0)
         {
             Die();

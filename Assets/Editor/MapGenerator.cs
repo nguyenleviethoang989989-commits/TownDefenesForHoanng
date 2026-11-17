@@ -137,11 +137,12 @@ public static class MapGenerator
             EditorUtility.SetDirty(gridManager);
         }
 
-        // 2. Di chuyển spawnstart và spawnend
+        // 2. Di chuyển spawnstart và spawnend & gắn Model 3D
         GameObject startObj = GameObject.Find("spawnstart");
         if (startObj != null)
         {
             startObj.transform.position = startPos;
+            AttachSpawnPointModel(startObj, "Assets/Models/Tower Defense Kit/tower-round-build-a.fbx", "Visual_SpawnStartModel");
             EditorUtility.SetDirty(startObj);
         }
 
@@ -149,6 +150,7 @@ public static class MapGenerator
         if (endObj != null)
         {
             endObj.transform.position = endPos;
+            AttachSpawnPointModel(endObj, "Assets/Models/Tower Defense Kit/tower-square-build-f.fbx", "Visual_SpawnEndModel");
             EditorUtility.SetDirty(endObj);
         }
 
@@ -257,5 +259,43 @@ public static class MapGenerator
         buildScenes.Add(new EditorBuildSettingsScene("Assets/Scenes/Map5.unity", true));
 
         EditorBuildSettings.scenes = buildScenes.ToArray();
+    }
+    private static void AttachSpawnPointModel(GameObject parentObj, string prefabPath, string childName)
+    {
+        for (int i = parentObj.transform.childCount - 1; i >= 0; i--)
+        {
+            Transform child = parentObj.transform.GetChild(i);
+            if (child.name.StartsWith("Visual_") || child.name.Contains("tower-"))
+            {
+                Object.DestroyImmediate(child.gameObject);
+            }
+        }
+
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+        if (prefab != null)
+        {
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            instance.name = childName;
+            instance.transform.SetParent(parentObj.transform, false);
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+
+            foreach (var col in instance.GetComponentsInChildren<Collider>())
+            {
+                col.enabled = false;
+            }
+
+            Material mainMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/MainColor.mat");
+            if (mainMat != null)
+            {
+                foreach (Renderer rend in instance.GetComponentsInChildren<Renderer>(true))
+                {
+                    Material[] mats = new Material[rend.sharedMaterials.Length];
+                    for (int m = 0; m < mats.Length; m++) mats[m] = mainMat;
+                    rend.sharedMaterials = mats;
+                }
+            }
+        }
     }
 }
