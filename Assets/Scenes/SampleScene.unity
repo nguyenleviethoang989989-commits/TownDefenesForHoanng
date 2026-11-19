@@ -321,8 +321,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Tho\xE1t\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2d3bd2628e7bb6844a3b382c1e63490d, type: 2}
-  m_sharedMaterial: {fileID: 3283139974243337625, guid: 2d3bd2628e7bb6844a3b382c1e63490d, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 170d93728f1d78e48a38309dc861dc71, type: 2}
+  m_sharedMaterial: {fileID: -5128459003738546119, guid: 170d93728f1d78e48a38309dc861dc71, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -346,8 +346,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
-  m_fontSizeBase: 12
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -800,7 +800,7 @@ Camera:
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
-  m_HDR: 1
+  m_HDR: 0
   m_AllowMSAA: 1
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
@@ -845,7 +845,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 1
+  m_RenderPostProcessing: 0
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -1390,7 +1390,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &452283094
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2250,8 +2250,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Th\xE1p Cannon"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2d3bd2628e7bb6844a3b382c1e63490d, type: 2}
-  m_sharedMaterial: {fileID: 3283139974243337625, guid: 2d3bd2628e7bb6844a3b382c1e63490d, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 170d93728f1d78e48a38309dc861dc71, type: 2}
+  m_sharedMaterial: {fileID: -5128459003738546119, guid: 170d93728f1d78e48a38309dc861dc71, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2275,8 +2275,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
-  m_fontSizeBase: 12
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2487,7 +2487,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &711290063
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3281,12 +3281,12 @@ MonoBehaviour:
   spawnPoint: {fileID: 1305697942}
   targetPoint: {fileID: 1391295671}
   waves:
-  - waveName: "\u0110\u1EE3t 1 - Kh\u1EDFi \u0111\u1ED9ng"
+  - waveName: "\u0110\u1EE3t 1 - Kh\u1EDFi \u0111\u1ED9ng (EnemyNormal)"
     elements:
     - enemyTag: EnemyNormal
       count: 5
       spawnRate: 2
-  - waveName: "\u0110\u1EE3t 2 - T\u0103ng c\u01B0\u1EDDng"
+  - waveName: "\u0110\u1EE3t 2 - T\u0103ng c\u01B0\u1EDDng (EnemyFast & EnemyTanker)"
     elements:
     - enemyTag: EnemyFast
       count: 3
@@ -3294,12 +3294,14 @@ MonoBehaviour:
     - enemyTag: EnemyTanker
       count: 2
       spawnRate: 0.5
-  - waveName: "\u0110\u1EE3t 3 - Boss"
+  - waveName: "\u0110\u1EE3t 3 - Boss (EnemyBoss)"
     elements:
     - enemyTag: EnemyBoss
       count: 3
       spawnRate: 1.5
   timeBetweenWaves: 5
+  currentWaveIndex: 0
+  endlessWaves: 1
 --- !u!4 &892218339
 Transform:
   m_ObjectHideFlags: 0
@@ -3374,8 +3376,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Th\xE1p Ice\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2d3bd2628e7bb6844a3b382c1e63490d, type: 2}
-  m_sharedMaterial: {fileID: 3283139974243337625, guid: 2d3bd2628e7bb6844a3b382c1e63490d, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 170d93728f1d78e48a38309dc861dc71, type: 2}
+  m_sharedMaterial: {fileID: -5128459003738546119, guid: 170d93728f1d78e48a38309dc861dc71, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3399,8 +3401,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
-  m_fontSizeBase: 12
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -4468,8 +4470,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "Th\xE1p Missile\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2d3bd2628e7bb6844a3b382c1e63490d, type: 2}
-  m_sharedMaterial: {fileID: 3283139974243337625, guid: 2d3bd2628e7bb6844a3b382c1e63490d, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 170d93728f1d78e48a38309dc861dc71, type: 2}
+  m_sharedMaterial: {fileID: -5128459003738546119, guid: 170d93728f1d78e48a38309dc861dc71, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4493,8 +4495,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
-  m_fontSizeBase: 12
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -5927,7 +5929,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6723761ae750e4c4aa136f47d42bef21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingMoney: 100
+  startingMoney: 200
 --- !u!1 &1713989956
 GameObject:
   m_ObjectHideFlags: 0

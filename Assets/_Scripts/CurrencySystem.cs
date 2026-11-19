@@ -7,7 +7,7 @@ public class CurrencySystem : MonoBehaviour
     public static CurrencySystem Instance { get; private set; }
 
     [Header("Cài đặt Tiền tệ")]
-    [SerializeField] private int startingMoney = 100; // Số tiền ban đầu khi bắt đầu Level
+    [SerializeField] private int startingMoney = 200; // Số tiền ban đầu khi bắt đầu Level
     private int currentMoney;
 
     // Sự kiện (Event) phát ra mỗi khi số tiền thay đổi (Dùng cho UI Update)

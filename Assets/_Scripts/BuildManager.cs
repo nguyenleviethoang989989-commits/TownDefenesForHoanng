@@ -127,6 +127,14 @@ public class BuildManager : MonoBehaviour
     {
         if (selectedNode == null) return;
 
+        // KIỂM TRA ĐIỀU KIỆN Ô ĐƯỢC PHÉP XÂY DỰNG
+        if (!selectedNode.isBuildable || selectedNode.currentTower != null)
+        {
+            Debug.Log("Không thể xây tháp tại vị trí này (nằm trên đường A* hoặc đã có tháp)!");
+            CloseUI();
+            return;
+        }
+
         // KIỂM TRA TIỀN TRƯỚC KHI XÂY
         if (CurrencySystem.Instance != null && !CurrencySystem.Instance.HasEnoughMoney(cost))
         {

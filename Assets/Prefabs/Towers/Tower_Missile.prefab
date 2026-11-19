@@ -123,8 +123,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  range: 2
+  towerLevel: 1
+  upgradeCost: 50
+  sellValue: 15
+  range: 2.5
   fireRate: 0.5
+  upgradedRange: 5
+  upgradedFireRate: 1.8
   enemyMask:
     serializedVersion: 2
     m_Bits: 64

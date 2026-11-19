@@ -2238,26 +2238,27 @@ MonoBehaviour:
   spawnPoint: {fileID: 1305697942}
   targetPoint: {fileID: 1391295671}
   waves:
-  - waveName: "\u0110\u1EE3t 1 - Kh\u1EDFi \u0111\u1ED9ng (\u0110\u1ED9 kh\xF3: x1.5)"
+  - waveName: "\u0110\u1EE3t 1 - Kh\u1EDFi \u0111\u1ED9ng (EnemyTanker)"
     elements:
-    - enemyTag: EnemyNormal
-      count: 8
-      spawnRate: 2.8
-  - waveName: "\u0110\u1EE3t 2 - T\u0103ng c\u01B0\u1EDDng (\u0110\u1ED9 kh\xF3:
-      x1.5)"
+    - enemyTag: EnemyTanker
+      count: 5
+      spawnRate: 2
+  - waveName: "\u0110\u1EE3t 2 - T\u0103ng c\u01B0\u1EDDng (EnemyFast & EnemyNormal)"
     elements:
     - enemyTag: EnemyFast
-      count: 5
-      spawnRate: 2.1
-    - enemyTag: EnemyTanker
       count: 3
-      spawnRate: 0.7
-  - waveName: "\u0110\u1EE3t 3 - Boss (\u0110\u1ED9 kh\xF3: x1.5)"
+      spawnRate: 1.5
+    - enemyTag: EnemyNormal
+      count: 2
+      spawnRate: 0.5
+  - waveName: "\u0110\u1EE3t 3 - Boss (EnemyBoss)"
     elements:
     - enemyTag: EnemyBoss
-      count: 5
-      spawnRate: 2.1
-  timeBetweenWaves: 4.25
+      count: 3
+      spawnRate: 1.5
+  timeBetweenWaves: 5
+  currentWaveIndex: 0
+  endlessWaves: 1
 --- !u!4 &892218339
 Transform:
   m_ObjectHideFlags: 0
@@ -3900,7 +3901,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6723761ae750e4c4aa136f47d42bef21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingMoney: 100
+  startingMoney: 200
 --- !u!1 &1807723339
 GameObject:
   m_ObjectHideFlags: 0

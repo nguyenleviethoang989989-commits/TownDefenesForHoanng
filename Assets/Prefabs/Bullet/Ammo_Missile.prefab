@@ -81,8 +81,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73e75face0792134b82037b1dc537edf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 2
-  explosionRadius: 1
+  speed: 2.5
+  explosionRadius: 0.5
   damage: 40
   enemyMask:
     serializedVersion: 2

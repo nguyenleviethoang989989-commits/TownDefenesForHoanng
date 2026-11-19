@@ -19,6 +19,8 @@ public class GridManager : MonoBehaviour
 
     // Mảng 2D chứa dữ liệu thuật toán
     public PathNode[,] grid;
+    // Mảng 2D tham chiếu tới các GameObject Node tương ứng trên bản đồ
+    public Node[,] nodeComponents;
 
     private void Awake()
     {
@@ -28,6 +30,8 @@ public class GridManager : MonoBehaviour
 
     private void GenerateGrid()
     {
+        nodeComponents = new Node[width, height];
+
         for (int x = 0; x < width; x++)
         {
             for (int z = 0; z < height; z++)
@@ -36,6 +40,12 @@ public class GridManager : MonoBehaviour
                 GameObject newNode = Instantiate(nodePrefab, position, Quaternion.identity);
                 newNode.name = $"Node ({x}, {z})";
                 newNode.transform.SetParent(transform);
+
+                Node nodeComp = newNode.GetComponent<Node>();
+                if (nodeComp != null)
+                {
+                    nodeComponents[x, z] = nodeComp;
+                }
             }
         }
     }
@@ -56,6 +66,33 @@ public class GridManager : MonoBehaviour
 
                 // Lưu vào mảng
                 grid[x, y] = new PathNode(walkable, worldPoint, x, y);
+
+                // Nếu có vật cản thuộc unwalkableMask thì không cho phép đặt tháp
+                if (!walkable && nodeComponents != null && nodeComponents[x, y] != null)
+                {
+                    nodeComponents[x, y].isBuildable = false;
+                }
+            }
+        }
+    }
+
+    // Đánh dấu không cho phép đặt Town / Tháp lên các Node thuộc đường đi A*
+    public void MarkPathNodesNonBuildable(IEnumerable<PathNode> pathNodes)
+    {
+        if (pathNodes == null) return;
+
+        foreach (PathNode pNode in pathNodes)
+        {
+            if (pNode != null && nodeComponents != null)
+            {
+                if (pNode.gridX >= 0 && pNode.gridX < width && pNode.gridY >= 0 && pNode.gridY < height)
+                {
+                    Node node = nodeComponents[pNode.gridX, pNode.gridY];
+                    if (node != null)
+                    {
+                        node.isBuildable = false;
+                    }
+                }
             }
         }
     }

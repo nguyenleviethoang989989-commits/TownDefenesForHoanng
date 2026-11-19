@@ -107,6 +107,13 @@ public class Pathfinding : MonoBehaviour
         path.Reverse();
         // Gọi hàm vẽ đường đi để Debug
         DrawPath(path);
+
+        // Khóa các Node thuộc đường đi A* để người chơi không thể đặt Town/Tháp lên đường trắng
+        if (gridManager != null)
+        {
+            gridManager.MarkPathNodesNonBuildable(path);
+        }
+
         return path;
     }
 

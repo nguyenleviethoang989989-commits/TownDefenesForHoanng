@@ -278,15 +278,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: dab5afdbf24c67d478dfeb3d63bbb403, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dab5afdbf24c67d478dfeb3d63bbb403, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dab5afdbf24c67d478dfeb3d63bbb403, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dab5afdbf24c67d478dfeb3d63bbb403, type: 3}
       propertyPath: m_LocalPosition.x
@@ -433,7 +433,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a48f1c232d649da4599806a82e5948f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 1500
+  maxHP: 200
   currentHP: 0
   moveSpeed: 1.2
   damageToBase: 1

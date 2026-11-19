@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // Định nghĩa cấu trúc của một Wave
 [System.Serializable]
 public struct Wave
 {
-    public string waveName; // Tên của đợt (ví dụ: "Wave 1 - Khởi động")
+    public string waveName; // Tên của đợt (ví dụ: "Đợt 1 - Khởi động")
     public List<WaveElement> elements; // Các nhóm quái trong đợt này
 }
 
@@ -14,9 +15,9 @@ public struct Wave
 [System.Serializable]
 public struct WaveElement
 {
-    public string enemyTag; // Tag của quái trong Object Pool (VD: "EnemyNormal", "EnemyTanker")
+    public string enemyTag; // Tag của quái trong Object Pool ("EnemyNormal", "EnemyFast", "EnemyTanker", "EnemyBoss")
     public int count;       // Số lượng quái vật loại này
-    public float spawnRate; // Tốc độ sinh quái (Ví dụ: 0.5 giây / 1 con)
+    public float spawnRate; // Tốc độ sinh quái (Ví dụ: 2 => 0.5s / con)
 }
 
 public class WaveManager : MonoBehaviour
@@ -24,23 +25,26 @@ public class WaveManager : MonoBehaviour
     public static WaveManager Instance;
 
     [Header("Cài đặt Wave")]
-    public Transform spawnPoint; // Điểm quái vật xuất hiện (spawnstart)
+    public Transform spawnPoint;  // Điểm quái vật xuất hiện (spawnstart)
     public Transform targetPoint; // Điểm đích đến của quái vật (spawnend / Base)
-    public List<Wave> waves; // Danh sách các Wave trong level
+    public List<Wave> waves;      // Danh sách các Wave trong level
 
     [Header("Trạng thái hiện tại")]
-    public float timeBetweenWaves = 5f; // Thời gian nghỉ giữa các đợt (Wait for Wave)
-    private float countdown; // Đếm ngược thời gian chờ đợt tiếp theo
+    public float timeBetweenWaves = 5f; // Thời gian nghỉ giữa các đợt
+    private float countdown;            // Đếm ngược thời gian chờ đợt tiếp theo
 
-    private int currentWaveIndex = 0; // Đợt hiện tại
-    private bool isSpawning = false;  // Đang trong quá trình sinh quái hay không
+    public int currentWaveIndex = 0;   // Đợt hiện tại
+    private int loopCycleCount = 1;     // Số vòng lặp đã qua
+    private bool isSpawning = false;    // Đang trong quá trình sinh quái hay không
+
+    [Header("Chế độ Lặp Vô Tận (Endless Waves)")]
+    public bool endlessWaves = true;    // Tự động lặp lại đợt quái nếu căn cứ chưa hết máu
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
-        // Tự động tìm targetPoint nếu chưa gán ở Inspector
         if (targetPoint == null)
         {
             GameObject endObj = GameObject.Find("spawnend");
@@ -56,56 +60,193 @@ public class WaveManager : MonoBehaviour
 
     private void Start()
     {
-        countdown = timeBetweenWaves; // Khởi tạo đếm ngược
+        countdown = timeBetweenWaves;
+
+        // Tự động hoán đổi loại quái tùy theo từng Map (giữ nguyên Count & Spawn Rate)
+        ConfigureWavesForCurrentMap();
+    }
+
+    // Tự động thay đổi phong cách enemy theo từng Map
+    private void ConfigureWavesForCurrentMap()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+
+        // Xác định loại quái theo từng map:
+        // Đợt 1: 1 loại quái
+        // Đợt 2: 2 loại quái còn lại
+        // Đợt 3: Boss (giữ nguyên ở tất cả các map)
+        string wave1Enemy = "EnemyNormal";
+        string wave2EnemyA = "EnemyFast";
+        string wave2EnemyB = "EnemyTanker";
+
+        if (sceneName == "Map2")
+        {
+            // Map 2: Đợt 1 là EnemyFast, Đợt 2 là Normal + Tanker
+            wave1Enemy = "EnemyFast";
+            wave2EnemyA = "EnemyNormal";
+            wave2EnemyB = "EnemyTanker";
+        }
+        else if (sceneName == "Map3")
+        {
+            // Map 3: Đợt 1 là EnemyTanker (trâu bò ở mê cung), Đợt 2 là Fast + Normal
+            wave1Enemy = "EnemyTanker";
+            wave2EnemyA = "EnemyFast";
+            wave2EnemyB = "EnemyNormal";
+        }
+        else if (sceneName == "Map4")
+        {
+            // Map 4: Đợt 1 là EnemyFast (chạy đường dài), Đợt 2 là Tanker + Normal
+            wave1Enemy = "EnemyFast";
+            wave2EnemyA = "EnemyTanker";
+            wave2EnemyB = "EnemyNormal";
+        }
+        else if (sceneName == "Map5")
+        {
+            // Map 5: Đợt 1 là EnemyTanker, Đợt 2 là Fast + Tanker
+            wave1Enemy = "EnemyTanker";
+            wave2EnemyA = "EnemyFast";
+            wave2EnemyB = "EnemyTanker";
+        }
+
+        // Cập nhật vào danh sách waves nếu có đủ 3 đợt
+        if (waves != null && waves.Count >= 2)
+        {
+            // Cập nhật Đợt 1
+            Wave w1 = waves[0];
+            if (w1.elements != null && w1.elements.Count > 0)
+            {
+                WaveElement e1 = w1.elements[0];
+                e1.enemyTag = wave1Enemy;
+                w1.elements[0] = e1;
+            }
+            w1.waveName = $"Đợt 1 - Khởi động ({wave1Enemy})";
+            waves[0] = w1;
+
+            // Cập nhật Đợt 2
+            Wave w2 = waves[1];
+            if (w2.elements != null)
+            {
+                if (w2.elements.Count > 0)
+                {
+                    WaveElement e2A = w2.elements[0];
+                    e2A.enemyTag = wave2EnemyA;
+                    w2.elements[0] = e2A;
+                }
+                if (w2.elements.Count > 1)
+                {
+                    WaveElement e2B = w2.elements[1];
+                    e2B.enemyTag = wave2EnemyB;
+                    w2.elements[1] = e2B;
+                }
+            }
+            w2.waveName = $"Đợt 2 - Tăng cường ({wave2EnemyA} & {wave2EnemyB})";
+            waves[1] = w2;
+
+            // Đợt 3 - Boss: Giữ nguyên EnemyBoss
+            if (waves.Count >= 3)
+            {
+                Wave w3 = waves[2];
+                w3.waveName = "Đợt 3 - Boss (EnemyBoss)";
+                waves[2] = w3;
+            }
+        }
     }
 
     private void Update()
     {
-        // Vòng lặp cốt lõi: Chờ Wave -> Bắt đầu Wave
-        if (currentWaveIndex >= waves.Count)
+        // Nếu Game Over (căn cứ hết máu) thì ngừng hẳn sinh quái
+        if (GameManager.Instance != null && GameManager.Instance.isGameOver)
         {
-            // Đã hết các Wave, có thể kiểm tra điều kiện thắng ở đây
             return;
         }
 
+        // Đang sinh quái thì không đếm ngược
         if (isSpawning)
         {
-            return; // Đang sinh quái thì không đếm ngược
+            return;
+        }
+
+        // KIỂM TRA HẾT 3 ĐỢT WAVES
+        if (currentWaveIndex >= waves.Count)
+        {
+            if (endlessWaves)
+            {
+                // Kiểm tra điều kiện căn cứ còn máu
+                if (GameManager.Instance != null && GameManager.Instance.currentBaseHP > 0)
+                {
+                    // Kiểm tra xem quái vật của đợt trước đã chết hoặc chạm base hết chưa
+                    // Nếu còn quái trên map thì đợi quái dọn xong mới bắt đầu vòng mới
+                    if (HasAliveEnemies())
+                    {
+                        return;
+                    }
+
+                    // TỰ ĐỘNG LẶP LẠI VÒNG WAVES MỚI
+                    loopCycleCount++;
+                    currentWaveIndex = 0;
+                    countdown = timeBetweenWaves;
+                    Debug.Log($"<color=yellow><b>[WaveManager]</b> Hoàn thành xuất sắc vòng trước! Căn cứ còn {GameManager.Instance.currentBaseHP} máu. Bắt đầu Vòng Wave tiếp theo #{loopCycleCount}!</color>");
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
         }
 
         countdown -= Time.deltaTime;
 
         if (countdown <= 0f)
         {
-            // Hết thời gian chờ, bắt đầu gọi Wave
             StartCoroutine(SpawnWave());
-            countdown = timeBetweenWaves; // Reset đếm ngược cho Wave sau
+            countdown = timeBetweenWaves;
         }
     }
 
-    // Coroutine để xử lý việc sinh quái có độ trễ (delay)
+    private bool HasAliveEnemies()
+    {
+        // Tìm xem còn quái vật nào đang hoạt động trên màn chơi không
+        EnemyMovement[] aliveEnemies = Object.FindObjectsByType<EnemyMovement>(FindObjectsSortMode.None);
+        foreach (var enemy in aliveEnemies)
+        {
+            if (enemy.gameObject.activeInHierarchy)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     IEnumerator SpawnWave()
     {
         isSpawning = true;
         Wave currentWave = waves[currentWaveIndex];
 
-        Debug.Log("Bắt đầu " + currentWave.waveName);
+        string loopPrefix = loopCycleCount > 1 ? $"[Vòng {loopCycleCount}] " : "";
+        Debug.Log("Bắt đầu " + loopPrefix + currentWave.waveName);
 
-        // Duyệt qua từng nhóm quái (WaveElement) trong Wave
         foreach (WaveElement element in currentWave.elements)
         {
-            // Sinh từng con quái theo số lượng (count)
             for (int i = 0; i < element.count; i++)
             {
-                SpawnEnemy(element.enemyTag);
+                // Nếu đang sinh mà căn cứ hết máu thì dừng lại
+                if (GameManager.Instance != null && GameManager.Instance.isGameOver)
+                {
+                    isSpawning = false;
+                    yield break;
+                }
 
-                // Tạm dừng 1 khoảng thời gian (spawnRate) trước khi sinh con tiếp theo
+                SpawnEnemy(element.enemyTag);
                 yield return new WaitForSeconds(1f / element.spawnRate);
             }
         }
 
         currentWaveIndex++;
-        isSpawning = false; // Kết thúc sinh quái cho đợt này
+        isSpawning = false;
     }
 
     private void SpawnEnemy(string tag)
@@ -116,12 +257,10 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        // Gọi quái vật ra từ Object Pool đã thiết lập trước đó
         GameObject enemy = ObjectPool.Instance.SpawnFromPool(tag, spawnPoint.position, spawnPoint.rotation);
 
         if (enemy != null)
         {
-            // Khởi tạo trạng thái và tìm đường A* cho quái
             EnemyMovement movement = enemy.GetComponent<EnemyMovement>();
             if (movement != null)
             {
