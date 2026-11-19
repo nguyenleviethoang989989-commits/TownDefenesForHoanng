@@ -27,9 +27,36 @@ public class PauseManager : MonoBehaviour
             return;
         }
 
-        if (pauseCanvas == null && pausePanel != null)
+        FindOrCreatePauseUI();
+    }
+
+    private void FindOrCreatePauseUI()
+    {
+        if (pausePanel == null)
         {
-            pauseCanvas = pausePanel.GetComponentInParent<Canvas>();
+            // Tìm DarkOverlay hoặc PausePanel trong Scene
+            var allTransforms = Resources.FindObjectsOfTypeAll<Transform>();
+            foreach (var t in allTransforms)
+            {
+                if ((t.name == "DarkOverlay" || t.name == "PausePanel") && t.hideFlags == HideFlags.None)
+                {
+                    pausePanel = t.gameObject;
+                    break;
+                }
+            }
+        }
+
+        if (pauseCanvas == null)
+        {
+            if (pausePanel != null)
+            {
+                pauseCanvas = pausePanel.GetComponentInParent<Canvas>();
+            }
+            if (pauseCanvas == null)
+            {
+                var canvasObj = GameObject.Find("PauseCanvas");
+                if (canvasObj != null) pauseCanvas = canvasObj.GetComponent<Canvas>();
+            }
         }
 
         if (pauseCanvas != null)
@@ -99,15 +126,6 @@ public class PauseManager : MonoBehaviour
             pausePanel.SetActive(true);
         }
 
-        // Ẩn các UI có thể đè lên
-        GameObject uiMoney = GameObject.Find("UiMoney");
-        if (uiMoney != null) uiMoney.SetActive(false);
-
-        if (MainMenuUIController.Instance != null && MainMenuUIController.Instance.inGameSoundButton != null)
-        {
-            MainMenuUIController.Instance.inGameSoundButton.SetActive(false);
-        }
-
         Debug.Log("Game đã TẠM DỪNG (PAUSED)!");
     }
 
@@ -120,15 +138,6 @@ public class PauseManager : MonoBehaviour
         if (pausePanel != null)
         {
             pausePanel.SetActive(false);
-        }
-
-        // Hiện lại UI trong game
-        GameObject uiMoney = GameObject.Find("UiMoney");
-        if (uiMoney != null) uiMoney.SetActive(true);
-
-        if (MainMenuUIController.Instance != null && MainMenuUIController.Instance.inGameSoundButton != null)
-        {
-            MainMenuUIController.Instance.inGameSoundButton.SetActive(true);
         }
 
         Debug.Log("Game TIẾP TỤC (RESUMED)!");
@@ -145,7 +154,14 @@ public class PauseManager : MonoBehaviour
             pausePanel.SetActive(false);
         }
 
-        // Tải lại Scene để quay về UI Main Menu ban đầu
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        // Nếu Scene có MainMenuUIController thì load lại scene này để vào Menu, ngược lại load SampleScene (Scene 0)
+        if (MainMenuUIController.Instance != null)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        else
+        {
+            SceneManager.LoadScene(0);
+        }
     }
 }

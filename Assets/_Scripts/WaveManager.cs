@@ -221,13 +221,51 @@ public class WaveManager : MonoBehaviour
         return false;
     }
 
+    private int totalWavesSpawned = 0; // Đếm tổng số đợt quái đã xuất hiện liên tục
+
     IEnumerator SpawnWave()
     {
         isSpawning = true;
         Wave currentWave = waves[currentWaveIndex];
+        totalWavesSpawned++;
 
         string loopPrefix = loopCycleCount > 1 ? $"[Vòng {loopCycleCount}] " : "";
         Debug.Log("Bắt đầu " + loopPrefix + currentWave.waveName);
+
+        // Kiểm tra xem đợt này có chứa Boss hay không
+        bool hasBoss = false;
+        if (currentWave.elements != null)
+        {
+            foreach (var el in currentWave.elements)
+            {
+                if (el.enemyTag == "EnemyBoss" || el.enemyTag.Contains("Boss"))
+                {
+                    hasBoss = true;
+                    break;
+                }
+            }
+        }
+        if (currentWave.waveName != null && currentWave.waveName.ToLower().Contains("boss"))
+        {
+            hasBoss = true;
+        }
+
+        // Thông báo UI Đợt Quái:
+        // Đợt thường: Màu vàng cam sáng (Color(1f, 0.85f, 0.2f))
+        // Đợt Boss: Màu đỏ cam rực rỡ / tím hồng rực lửa (Color(1f, 0.25f, 0.1f) hoặc viền vàng rực rỡ)
+        if (UIManager.Instance != null)
+        {
+            if (hasBoss)
+            {
+                // Thông báo Boss nổi bật rực rỡ
+                UIManager.Instance.ShowEventNotification($"⚠ BẮT ĐẦU ĐỢT {totalWavesSpawned} - BOSS XUẤT HIỆN! ⚠", new Color(1f, 0.22f, 0.1f, 1f), 4.5f);
+            }
+            else
+            {
+                // Thông báo đợt quái thường
+                UIManager.Instance.ShowEventNotification($"Bắt đầu đợt {totalWavesSpawned}", new Color(1f, 0.85f, 0.2f, 1f), 3f);
+            }
+        }
 
         foreach (WaveElement element in currentWave.elements)
         {

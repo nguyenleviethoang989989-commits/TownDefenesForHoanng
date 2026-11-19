@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
@@ -6,8 +7,11 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     [Header("Chỉ số Căn cứ")]
-    public int maxBaseHP = 20; // Trùng khớp với thiết kế GDD
+    public int maxBaseHP = 10; // Bắt đầu với 10 máu căn cứ
     public int currentBaseHP;
+
+    // Sự kiện phát ra khi máu căn cứ thay đổi (Observer Pattern dùng cho UI)
+    public event Action<int, int> OnBaseHealthChanged;
 
     [Header("Trạng thái Game")]
     public bool isGameOver = false;
@@ -18,6 +22,7 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            currentBaseHP = maxBaseHP;
         }
         else
         {
@@ -29,6 +34,7 @@ public class GameManager : MonoBehaviour
     {
         currentBaseHP = maxBaseHP;
         Debug.Log("Game bắt đầu! Máu căn cứ: " + currentBaseHP);
+        OnBaseHealthChanged?.Invoke(currentBaseHP, maxBaseHP);
     }
 
     // Hàm nhận sát thương cho Căn cứ
@@ -37,7 +43,12 @@ public class GameManager : MonoBehaviour
         if (isGameOver) return; // Nếu game over rồi thì không trừ máu nữa
 
         currentBaseHP -= amount;
+        if (currentBaseHP < 0) currentBaseHP = 0;
+
         Debug.Log("Căn cứ bị lọt lưới! Bị trừ " + amount + " máu. Máu còn lại: " + currentBaseHP);
+
+        // Phát sự kiện cập nhật UI
+        OnBaseHealthChanged?.Invoke(currentBaseHP, maxBaseHP);
 
         // Kiểm tra điều kiện thua
         if (currentBaseHP <= 0)

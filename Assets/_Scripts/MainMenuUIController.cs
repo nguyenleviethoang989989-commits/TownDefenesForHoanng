@@ -167,6 +167,12 @@ public class MainMenuUIController : MonoBehaviour
             AudioManager.Instance.PlayGameplayMusic();
         }
 
+        // 6. Hiển thị thông báo "Game bắt đầu" màu xanh lá cây
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.ShowEventNotification("Game bắt đầu!", new Color(0.2f, 0.95f, 0.3f, 1f), 3.5f);
+        }
+
         Debug.Log("<color=green>Đã load 100%! Bắt đầu màn chơi game!</color>");
     }
 
