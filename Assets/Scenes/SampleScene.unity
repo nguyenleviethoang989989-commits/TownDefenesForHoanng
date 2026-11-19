@@ -1286,7 +1286,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &413558930
@@ -1655,7 +1655,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+  m_Color: {r: 0, g: 0.9716981, b: 0.078617744, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3941,6 +3941,11 @@ MonoBehaviour:
   iceCost: 80
   buildUI: {fileID: 452283093}
   upgradeUI: {fileID: 1456579800}
+  upgradeButtonText: {fileID: 0}
+  sellButtonText: {fileID: 0}
+  cannonButtonText: {fileID: 0}
+  missileButtonText: {fileID: 0}
+  iceButtonText: {fileID: 0}
 --- !u!4 &1106799683
 Transform:
   m_ObjectHideFlags: 0
@@ -5377,7 +5382,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1456579801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7017,7 +7022,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &2071206950

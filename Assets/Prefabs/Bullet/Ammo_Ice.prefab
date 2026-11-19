@@ -83,5 +83,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 5
   damage: 10
-  slowAmount: 0.5
-  slowDuration: 2
+  slowAmount: 0.75
+  slowDuration: 3

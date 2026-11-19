@@ -55,18 +55,20 @@ public static class UpgradeUISetup
         Image panelImg = panelObj.GetComponent<Image>();
         panelImg.color = new Color(0.12f, 0.12f, 0.12f, 0.85f); // #1E1E1ECC
 
-        // 6. Tạo Nút Nâng Cấp
-        GameObject upgradeBtnObj = CreateButton("Upgrade_Button", panelObj.transform, new Vector2(-80f, 0f), new Vector2(140f, 50f), new Color(0.15f, 0.68f, 0.38f), "NÂNG CẤP");
+        // 6. Tạo Nút Nâng Cấp (size 150x60 để hiển thị 2 dòng chữ và giá rõ ràng, đẹp mắt)
+        GameObject upgradeBtnObj = CreateButton("Upgrade_Button", panelObj.transform, new Vector2(-85f, 0f), new Vector2(150f, 60f), new Color(0.15f, 0.68f, 0.38f), "NÂNG CẤP\n<size=75%>50 Vàng</size>");
         Button upgradeBtn = upgradeBtnObj.GetComponent<Button>();
         UnityEventTools.AddPersistentListener(upgradeBtn.onClick, buildManager.UpgradeSelectedTower);
 
-        // 7. Tạo Nút Bán
-        GameObject sellBtnObj = CreateButton("Sell_Button", panelObj.transform, new Vector2(80f, 0f), new Vector2(140f, 50f), new Color(0.91f, 0.30f, 0.24f), "BÁN");
+        // 7. Tạo Nút Bán (size 150x60)
+        GameObject sellBtnObj = CreateButton("Sell_Button", panelObj.transform, new Vector2(85f, 0f), new Vector2(150f, 60f), new Color(0.91f, 0.30f, 0.24f), "BÁN\n<size=75%>+15 Vàng</size>");
         Button sellBtn = sellBtnObj.GetComponent<Button>();
         UnityEventTools.AddPersistentListener(sellBtn.onClick, buildManager.SellSelectedTower);
 
         // 8. Gán vào BuildManager
         buildManager.upgradeUI = panelObj;
+        buildManager.upgradeButtonText = upgradeBtnObj.GetComponentInChildren<TextMeshProUGUI>();
+        buildManager.sellButtonText = sellBtnObj.GetComponentInChildren<TextMeshProUGUI>();
         EditorUtility.SetDirty(buildManager);
 
         // Mặc định ẩn UI khi bắt đầu hoặc trong Editor
@@ -106,10 +108,11 @@ public static class UpgradeUISetup
 
         TextMeshProUGUI tmp = textObj.GetComponent<TextMeshProUGUI>();
         tmp.text = textContent;
-        tmp.fontSize = 20;
+        tmp.fontSize = 17;
         tmp.fontStyle = FontStyles.Bold;
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.color = Color.white;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
 
         return btnObj;
     }

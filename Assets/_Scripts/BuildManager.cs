@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using TMPro;
 
 public class BuildManager : MonoBehaviour
 {
@@ -17,6 +18,11 @@ public class BuildManager : MonoBehaviour
     [Header("Giao diện UI")]
     public GameObject buildUI;     // Bảng chọn loại tháp để xây
     public GameObject upgradeUI;   // Bảng Nâng cấp / Bán tháp
+    public TextMeshProUGUI upgradeButtonText; // Text trên nút Nâng cấp
+    public TextMeshProUGUI sellButtonText;    // Text trên nút Bán
+    public TextMeshProUGUI cannonButtonText;  // Text trên nút Tháp Cannon
+    public TextMeshProUGUI missileButtonText; // Text trên nút Tháp Missile
+    public TextMeshProUGUI iceButtonText;     // Text trên nút Tháp Ice
 
     private Node selectedNode;              // Lưu trữ Node đang được chọn
     private BaseTower selectedTowerToUpgrade; // Lưu trữ tháp trên Node đang được chọn
@@ -25,12 +31,104 @@ public class BuildManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        FindUpgradeUITexts();
+        FindBuildUITexts();
+    }
+
+    private void FindBuildUITexts()
+    {
+        if (buildUI != null)
+        {
+            if (cannonButtonText == null)
+            {
+                Transform btn = buildUI.transform.Find("Tháp Cannon");
+                if (btn != null) cannonButtonText = btn.GetComponentInChildren<TextMeshProUGUI>();
+            }
+            if (missileButtonText == null)
+            {
+                Transform btn = buildUI.transform.Find("Tháp Missile");
+                if (btn != null) missileButtonText = btn.GetComponentInChildren<TextMeshProUGUI>();
+            }
+            if (iceButtonText == null)
+            {
+                Transform btn = buildUI.transform.Find("Tháp Ice");
+                if (btn != null) iceButtonText = btn.GetComponentInChildren<TextMeshProUGUI>();
+            }
+        }
+    }
+
+    private void UpdateBuildUIInfo()
+    {
+        FindBuildUITexts();
+
+        if (cannonButtonText != null)
+        {
+            cannonButtonText.fontSize = 14;
+            cannonButtonText.text = $"Tháp Cannon ({cannonCost}G)";
+        }
+
+        if (missileButtonText != null)
+        {
+            missileButtonText.fontSize = 14;
+            missileButtonText.text = $"Tháp Missile ({missileCost}G)";
+        }
+
+        if (iceButtonText != null)
+        {
+            iceButtonText.fontSize = 14;
+            iceButtonText.text = $"Tháp Ice ({iceCost}G)";
+        }
+    }
+
+    private void FindUpgradeUITexts()
+    {
+        if (upgradeUI != null)
+        {
+            if (upgradeButtonText == null)
+            {
+                Transform upBtn = upgradeUI.transform.Find("Upgrade_Button");
+                if (upBtn != null) upgradeButtonText = upBtn.GetComponentInChildren<TextMeshProUGUI>();
+            }
+            if (sellButtonText == null)
+            {
+                Transform sellBtn = upgradeUI.transform.Find("Sell_Button");
+                if (sellBtn != null) sellButtonText = sellBtn.GetComponentInChildren<TextMeshProUGUI>();
+            }
+        }
     }
 
     private void Start()
     {
         if (buildUI != null) buildUI.SetActive(false);
         if (upgradeUI != null) upgradeUI.SetActive(false);
+    }
+
+    // Hàm cập nhật chữ và giá trên các nút Upgrade & Sell của tháp đang chọn
+    public void UpdateUpgradeUIInfo()
+    {
+        FindUpgradeUITexts();
+
+        if (selectedTowerToUpgrade == null) return;
+
+        // Cập nhật nút Nâng Cấp
+        if (upgradeButtonText != null)
+        {
+            if (selectedTowerToUpgrade.towerLevel >= 2)
+            {
+                upgradeButtonText.text = "TỐI ĐA";
+            }
+            else
+            {
+                upgradeButtonText.text = $"NÂNG CẤP\n<size=75%>{selectedTowerToUpgrade.upgradeCost} Vàng</size>";
+            }
+        }
+
+        // Cập nhật nút Bán
+        if (sellButtonText != null)
+        {
+            sellButtonText.text = $"BÁN\n<size=75%>+{selectedTowerToUpgrade.sellValue} Vàng</size>";
+        }
     }
 
     // Hàm này được gọi khi click vào 1 ô đất (Node)
@@ -43,12 +141,18 @@ public class BuildManager : MonoBehaviour
         {
             selectedTowerToUpgrade = node.currentTower.GetComponent<BaseTower>();
 
+            // Cập nhật giá tương ứng của từng tháp trước khi hiển thị panel
+            UpdateUpgradeUIInfo();
+
             if (upgradeUI != null) upgradeUI.SetActive(true);
             if (buildUI != null) buildUI.SetActive(false);
         }
         else // Ngược lại nếu ô đất còn trống -> Mở UI Xây, ẩn UI Nâng cấp/Bán
         {
             selectedTowerToUpgrade = null;
+
+            // Cập nhật giá của các loại tháp lên các nút
+            UpdateBuildUIInfo();
 
             if (buildUI != null) buildUI.SetActive(true);
             if (upgradeUI != null) upgradeUI.SetActive(false);
