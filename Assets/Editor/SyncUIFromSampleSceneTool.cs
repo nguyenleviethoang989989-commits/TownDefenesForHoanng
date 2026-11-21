@@ -137,6 +137,9 @@ public static class SyncUIFromSampleSceneTool
                 Transform healthTrans = newUIObj.transform.Find("UiMoney/BaseHealthText");
                 if (healthTrans != null) uiManager.baseHealthText = healthTrans.GetComponent<TextMeshProUGUI>();
 
+                Transform scoreTrans = newUIObj.transform.Find("UiMoney/ScoreText");
+                if (scoreTrans != null) uiManager.scoreText = scoreTrans.GetComponent<TextMeshProUGUI>();
+
                 Transform noticeTrans = newUIObj.transform.Find("UiMoney/EventNotificationText");
                 if (noticeTrans != null) uiManager.eventNotificationText = noticeTrans.GetComponent<TextMeshProUGUI>();
 
@@ -144,7 +147,24 @@ public static class SyncUIFromSampleSceneTool
                 {
                     uiManager.gameOverPanel = gameOverChildPanel;
                     Transform titleTrans = gameOverChildPanel.transform.Find("TitleText");
-                    if (titleTrans != null) uiManager.titleText = titleTrans.GetComponent<TextMeshProUGUI>();
+                    if (titleTrans != null)
+                    {
+                        uiManager.titleText = titleTrans.GetComponent<TextMeshProUGUI>();
+                        if (uiManager.titleText != null)
+                        {
+                            uiManager.titleText.margin = Vector4.zero;
+                            uiManager.titleText.alignment = TextAlignmentOptions.Center;
+                            uiManager.titleText.horizontalAlignment = HorizontalAlignmentOptions.Center;
+                            uiManager.titleText.verticalAlignment = VerticalAlignmentOptions.Middle;
+                            EditorUtility.SetDirty(uiManager.titleText);
+                        }
+                    }
+
+                    Transform resultScoreTrans = gameOverChildPanel.transform.Find("ResultScoreText");
+                    if (resultScoreTrans != null)
+                    {
+                        uiManager.resultScoreText = resultScoreTrans.GetComponent<TextMeshProUGUI>();
+                    }
                 }
                 EditorUtility.SetDirty(uiManager);
             }

@@ -34,8 +34,10 @@ public class WaveManager : MonoBehaviour
     private float countdown;            // Đếm ngược thời gian chờ đợt tiếp theo
 
     public int currentWaveIndex = 0;   // Đợt hiện tại
-    private int loopCycleCount = 1;     // Số vòng lặp đã qua
+    public int loopCycleCount = 1;     // Số vòng lặp đã qua
+    public int maxLoops = 5;           // Số vòng tối đa để chiến thắng (5 vòng)
     private bool isSpawning = false;    // Đang trong quá trình sinh quái hay không
+    private bool isMapCleared = false;   // Đã hoàn thành và chiến thắng map hay chưa
 
     [Header("Chế độ Lặp Vô Tận (Endless Waves)")]
     public bool endlessWaves = true;    // Tự động lặp lại đợt quái nếu căn cứ chưa hết máu
@@ -152,10 +154,36 @@ public class WaveManager : MonoBehaviour
         }
     }
 
+    // Trả về số lượng enemy tăng thêm cho mỗi đợt tùy theo Map:
+    // Map 1, Map 2: giữ nguyên (0)
+    // Map 3: +2 quái mỗi đợt
+    // Map 4: +3 quái mỗi đợt
+    // Map 5: +4 quái mỗi đợt
+    public int GetExtraEnemyCountForCurrentMap()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        switch (sceneName)
+        {
+            case "Map3":
+                return 2;
+            case "Map4":
+                return 3;
+            case "Map5":
+                return 4;
+            default:
+                return 0; // SampleScene (Map 1) và Map 2 giữ nguyên
+        }
+    }
+
     private void Update()
     {
-        // Nếu Game Over (căn cứ hết máu) thì ngừng hẳn sinh quái
+        // Nếu Game Over (căn cứ hết máu) hoặc đã chiến thắng map thì ngừng sinh quái
         if (GameManager.Instance != null && GameManager.Instance.isGameOver)
+        {
+            return;
+        }
+
+        if (isMapCleared)
         {
             return;
         }
@@ -166,30 +194,48 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        // KIỂM TRA HẾT 3 ĐỢT WAVES
+        // KIỂM TRA HẾT CÁC ĐỢT TRONG VÒNG (WAVES)
         if (currentWaveIndex >= waves.Count)
         {
-            if (endlessWaves)
+            // Kiểm tra điều kiện căn cứ còn máu
+            if (GameManager.Instance != null && GameManager.Instance.currentBaseHP > 0)
             {
-                // Kiểm tra điều kiện căn cứ còn máu
-                if (GameManager.Instance != null && GameManager.Instance.currentBaseHP > 0)
+                // Kiểm tra xem quái vật của đợt trước đã chết hoặc chạm base hết chưa
+                // Nếu còn quái trên map thì đợi quái dọn xong mới kết luận
+                if (HasAliveEnemies())
                 {
-                    // Kiểm tra xem quái vật của đợt trước đã chết hoặc chạm base hết chưa
-                    // Nếu còn quái trên map thì đợi quái dọn xong mới bắt đầu vòng mới
-                    if (HasAliveEnemies())
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    // TỰ ĐỘNG LẶP LẠI VÒNG WAVES MỚI
-                    loopCycleCount++;
-                    currentWaveIndex = 0;
-                    countdown = timeBetweenWaves;
-                    Debug.Log($"<color=yellow><b>[WaveManager]</b> Hoàn thành xuất sắc vòng trước! Căn cứ còn {GameManager.Instance.currentBaseHP} máu. Bắt đầu Vòng Wave tiếp theo #{loopCycleCount}!</color>");
+                // NẾU ĐÃ HOÀN THÀNH VÒNG 5 (maxLoops) VÀ CĂN CỨ VẪN CÒN MÁU -> CHIẾN THẮNG MAP!
+                if (loopCycleCount >= maxLoops)
+                {
+                    isMapCleared = true;
+                    Debug.Log($"<color=green><b>[WaveManager]</b> ĐÃ HOÀN THÀNH XUẤT SẮC {maxLoops} VÒNG! NGƯỜI CHƠI CHIẾN THẮNG!</color>");
+                    if (GameManager.Instance != null)
+                    {
+                        GameManager.Instance.WinGame();
+                    }
+                    return;
+                }
+
+                // TỰ ĐỘNG BƯỚC SANG VÒNG TIẾP THEO
+                loopCycleCount++;
+                currentWaveIndex = 0;
+                countdown = timeBetweenWaves;
+
+                // Thông báo khi bước vào vòng 3 (chỉ số enemy tăng gấp đôi)
+                if (loopCycleCount >= 3)
+                {
+                    if (UIManager.Instance != null)
+                    {
+                        UIManager.Instance.ShowEventNotification($"⚠ BẮT ĐẦU VÒNG {loopCycleCount}: QUÁI VẬT TĂNG GẤP ĐÔI SỨC MẠNH! ⚠", new Color(1f, 0.15f, 0.15f, 1f), 4.5f);
+                    }
+                    Debug.Log($"<color=red><b>[WaveManager]</b> Bắt đầu Vòng #{loopCycleCount}: Các chỉ số của enemy tăng gấp đôi!</color>");
                 }
                 else
                 {
-                    return;
+                    Debug.Log($"<color=yellow><b>[WaveManager]</b> Hoàn thành vòng trước! Căn cứ còn {GameManager.Instance.currentBaseHP} máu. Bắt đầu Vòng Wave tiếp theo #{loopCycleCount}!</color>");
                 }
             }
             else
@@ -255,6 +301,8 @@ public class WaveManager : MonoBehaviour
         // Đợt Boss: Màu đỏ cam rực rỡ / tím hồng rực lửa (Color(1f, 0.25f, 0.1f) hoặc viền vàng rực rỡ)
         if (UIManager.Instance != null)
         {
+            string waveNotice = loopCycleCount >= 3 ? $"Bắt đầu đợt {totalWavesSpawned} (x2 Sức mạnh)" : $"Bắt đầu đợt {totalWavesSpawned}";
+
             if (hasBoss)
             {
                 // Thông báo Boss nổi bật rực rỡ
@@ -263,13 +311,24 @@ public class WaveManager : MonoBehaviour
             else
             {
                 // Thông báo đợt quái thường
-                UIManager.Instance.ShowEventNotification($"Bắt đầu đợt {totalWavesSpawned}", new Color(1f, 0.85f, 0.2f, 1f), 3f);
+                Color noticeColor = loopCycleCount >= 3 ? new Color(1f, 0.35f, 0.2f, 1f) : new Color(1f, 0.85f, 0.2f, 1f);
+                UIManager.Instance.ShowEventNotification(waveNotice, noticeColor, 3f);
             }
         }
 
+        // Xác định số lượng quái tăng thêm cho mỗi đợt theo từng Map:
+        // Map 1, Map 2: giữ nguyên (0)
+        // Map 3: +2 quái mỗi đợt
+        // Map 4: +3 quái mỗi đợt
+        // Map 5: +4 quái mỗi đợt
+        int extraCountPerWave = GetExtraEnemyCountForCurrentMap();
+
         foreach (WaveElement element in currentWave.elements)
         {
-            for (int i = 0; i < element.count; i++)
+            // Số lượng quái thực tế sinh ra (số gốc + phần tăng thêm của map)
+            int spawnCount = element.count + extraCountPerWave;
+
+            for (int i = 0; i < spawnCount; i++)
             {
                 // Nếu đang sinh mà căn cứ hết máu thì dừng lại
                 if (GameManager.Instance != null && GameManager.Instance.isGameOver)
@@ -302,6 +361,16 @@ public class WaveManager : MonoBehaviour
             EnemyMovement movement = enemy.GetComponent<EnemyMovement>();
             if (movement != null)
             {
+                // Nếu đang ở từ vòng 3 trở đi mà máu căn cứ vẫn còn > 0, nhân đôi toàn bộ chỉ số enemy
+                if (loopCycleCount >= 3 && GameManager.Instance != null && GameManager.Instance.currentBaseHP > 0)
+                {
+                    movement.ApplyStatMultiplier(2.0f);
+                }
+                else
+                {
+                    movement.ApplyStatMultiplier(1.0f);
+                }
+
                 movement.SpawnSetup(spawnPoint, targetPoint);
             }
         }

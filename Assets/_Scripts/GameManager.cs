@@ -23,6 +23,12 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             currentBaseHP = maxBaseHP;
+
+            // Đảm bảo luôn có ScoreManager hoạt động trong Scene
+            if (FindFirstObjectByType<ScoreManager>() == null)
+            {
+                gameObject.AddComponent<ScoreManager>();
+            }
         }
         else
         {
@@ -62,6 +68,13 @@ public class GameManager : MonoBehaviour
     {
         isGameOver = true;
         Debug.Log("GAME OVER! Căn cứ đã bị phá hủy.");
+
+        // Lưu điểm số cao nếu đạt kỷ lục
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.SaveScoreIfHighScore();
+        }
+
         // Gọi UIManager hiển thị màn hình thua
         if (UIManager.Instance != null)
         {
@@ -77,6 +90,12 @@ public class GameManager : MonoBehaviour
 
         isGameOver = true;
         Debug.Log("YOU WIN! Đã dọn sạch quái.");
+
+        // Lưu điểm số cao nếu đạt kỷ lục
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.SaveScoreIfHighScore();
+        }
 
         // Gọi UIManager hiển thị màn hình thắng
         if (UIManager.Instance != null)

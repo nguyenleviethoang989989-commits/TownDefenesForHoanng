@@ -12,6 +12,13 @@ public class EnemyMovement : MonoBehaviour
     public int rewardMoney = 10;
     public float yOffset = 0.5f;
 
+    // Lưu chỉ số gốc ban đầu để có thể nhân đôi theo WaveManager
+    private float baseMaxHP;
+    private float baseMoveSpeed;
+    private int baseDamageToBase;
+    private int baseRewardMoney;
+    private bool baseStatsInitialized = false;
+
     [Header("Điểm mốc di chuyển (Tùy chọn)")]
     public Transform customStartPoint;
     public Transform customTargetPoint;
@@ -34,11 +41,41 @@ public class EnemyMovement : MonoBehaviour
 
     private void Awake()
     {
+        InitializeBaseStats();
+
         // Tìm 2 hệ thống này ngay khi game bắt đầu
         pathfinding = FindFirstObjectByType<Pathfinding>();
         gridManager = FindFirstObjectByType<GridManager>();
         spawnAudio = GetComponent<AudioSource>();
         if (healthUI == null) healthUI = GetComponentInChildren<EnemyHealthUI>();
+    }
+
+    private void InitializeBaseStats()
+    {
+        if (!baseStatsInitialized)
+        {
+            baseMaxHP = maxHP;
+            baseMoveSpeed = moveSpeed;
+            baseDamageToBase = damageToBase;
+            baseRewardMoney = rewardMoney;
+            baseStatsInitialized = true;
+        }
+    }
+
+    // Áp dụng hệ số chỉ số (ví dụ tăng gấp đôi ở vòng 3 trở đi)
+    public void ApplyStatMultiplier(float multiplier)
+    {
+        InitializeBaseStats();
+        maxHP = baseMaxHP * multiplier;
+        currentHP = maxHP;
+        moveSpeed = baseMoveSpeed * multiplier;
+        damageToBase = Mathf.RoundToInt(baseDamageToBase * multiplier);
+        rewardMoney = Mathf.RoundToInt(baseRewardMoney * multiplier);
+
+        if (healthUI != null)
+        {
+            healthUI.UpdateHealth(currentHP, maxHP);
+        }
     }
 
     protected virtual void OnEnable()
@@ -214,6 +251,13 @@ public class EnemyMovement : MonoBehaviour
         {
             CurrencySystem.Instance.AddMoney(rewardMoney);
         }
+
+        // Tích hợp hệ thống điểm: cộng điểm theo giá trị thưởng của quái
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.AddScore(rewardMoney);
+        }
+
         OnEnemyRemoved?.Invoke(gameObject);
         gameObject.SetActive(false);
     }

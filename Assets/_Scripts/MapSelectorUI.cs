@@ -6,9 +6,31 @@ using UnityEngine.InputSystem;
 
 public class MapSelectorUI : MonoBehaviour
 {
+    public static MapSelectorUI Instance;
     private bool showMenu = false;
     private GUIStyle buttonStyle;
     private GUIStyle headerStyle;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    public void OpenMapMenu()
+    {
+        showMenu = true;
+    }
+
+    public void CloseMapMenu()
+    {
+        showMenu = false;
+    }
+
+    public void ToggleMapMenu()
+    {
+        showMenu = !showMenu;
+    }
 
     private void Update()
     {
@@ -44,13 +66,14 @@ public class MapSelectorUI : MonoBehaviour
 
     private void OnGUI()
     {
-        // ẨN TOÀN BỘ KHI Ở MENU, LOADING HOẶC ĐÃ GAME OVER / WIN!
+        // ẨN TOÀN BỘ KHI Ở MENU HOẶC LOADING
         if (MainMenuUIController.Instance != null && !MainMenuUIController.Instance.isGameStarted)
         {
             return;
         }
 
-        if (GameManager.Instance != null && GameManager.Instance.isGameOver)
+        // Nếu game đã Game Over và KHÔNG PHẢI đang mở menu chọn map thì không hiển thị nút toggle
+        if (GameManager.Instance != null && GameManager.Instance.isGameOver && !showMenu)
         {
             return;
         }

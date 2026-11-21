@@ -65,16 +65,39 @@ public class ObjectPool : MonoBehaviour
             return null;
         }
 
-        // Lấy đối tượng đầu tiên ra khỏi hàng đợi
-        GameObject objectToSpawn = poolDictionary[tag].Dequeue();
+        Queue<GameObject> objectPool = poolDictionary[tag];
+
+        // Nếu hàng đợi rỗng hoặc đối tượng đầu tiên đang còn active (đang sống trên map),
+        // tự động khởi tạo thêm prefab mới (auto-expand) để không bị thiếu quái hay giật quái đang đi
+        GameObject objectToSpawn = null;
+        if (objectPool.Count > 0 && !objectPool.Peek().activeInHierarchy)
+        {
+            objectToSpawn = objectPool.Dequeue();
+        }
+        else
+        {
+            // Tìm prefab tương ứng trong danh sách pools để sinh thêm
+            Pool p = pools.Find(x => x.tag == tag);
+            if (p != null && p.prefab != null)
+            {
+                objectToSpawn = Instantiate(p.prefab);
+                objectToSpawn.transform.SetParent(this.transform);
+            }
+            else if (objectPool.Count > 0)
+            {
+                objectToSpawn = objectPool.Dequeue();
+            }
+        }
+
+        if (objectToSpawn == null) return null;
 
         // Cập nhật vị trí, góc xoay và Bật nó lên
-        objectToSpawn.SetActive(true);
         objectToSpawn.transform.position = position;
         objectToSpawn.transform.rotation = rotation;
+        objectToSpawn.SetActive(true);
 
         // Cho đối tượng vào lại cuối hàng đợi để xoay vòng tái sử dụng
-        poolDictionary[tag].Enqueue(objectToSpawn);
+        objectPool.Enqueue(objectToSpawn);
 
         return objectToSpawn;
     }
